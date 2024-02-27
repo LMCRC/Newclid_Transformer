@@ -22,3 +22,17 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# IDE configs
+.vscode/
+
+# Virtual environments
+pyvenv.cfg
+bin/
+venv/
+
+# Meliad stuff
+share/
+
+# LLM vocab
+ag_ckpt_vocab/
