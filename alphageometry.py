@@ -23,11 +23,13 @@ import traceback
 from absl import app
 from absl import flags
 from absl import logging
-import ddar
-import graph as gh
+
 import lm_inference as lm
-import pretty as pt
-import problem as pr
+
+import geosolver.ddar as ddar
+import geosolver.graph as gh
+import geosolver.problem as pr
+import geosolver.pretty as pt
 
 
 _GIN_SEARCH_PATHS = flags.DEFINE_list(
