@@ -343,37 +343,27 @@ each of them and their description.
 
 | File name              | Description                                                                        |
 |------------------------|------------------------------------------------------------------------------------|
-| `geometry.py`          | Implements nodes (Point, Line, Circle, etc) in the proof state graph.              |
-| `numericals.py`        | Implements the numerical engine in the dynamic geometry environment.               |
-| `graph_utils.py`       | Implements utilities for the proof state graph.                                    |
-| `graph.py`             | Implements the proof state graph.                                                  |
-| `problem.py`           | Implements the classes that represent the problem premises, conclusion, DAG nodes. |
-| `dd.py`                | Implements DD and its traceback.                                                   |
-| `ar.py`                | Implements AR and its traceback.                                                   |
-| `trace_back.py`        | Implements the recursive traceback and dependency difference algorithm.            |
-| `ddar.py`              | Implements the combination DD+AR.                                                  |
 | `beam_search.py`       | Implements beam decoding of a language model in JAX.                               |
 | `models.py`            | Implements the transformer model.                                                  |
 | `transformer_layer.py` | Implements the transformer layer.                                                  |
 | `decoder_stack.py`     | Implements the transformer decoder stack.                                          |
 | `lm_inference.py`      | Implements an interface to a trained LM to perform decoding.                       |
 | `alphageometry.py`                | Main script that loads problems, calls DD+AR or AlphaGeometry solver, and prints solutions.   |
-| `pretty.py`            | Pretty formating the solutions output by solvers.                                  |
-| `*_test.py`            | Tests for the corresponding module.                                                |
 | `download.sh`          | Script to download model checkpoints and LM                                        |
-| `run.sh`               | Script to execute instructions in README.                                          |
+| `setup.sh`             | Script to execute setup instructions in README.                                    |
+| `run.sh`               | Script to execute run instructions in README.                                      |
 | `run_tests.sh`         | Script to execute the test suite.                                                  |
 
 
 Resource files:
 
-| Resource file name     | Description                                                                        |
-|------------------------|------------------------------------------------------------------------------------|
-| `defs.txt`             | Definitions of different geometric construction actions.                           |
-| `rules.txt`            | Deduction rules for DD.                                                            |
+| Resource file name          | Description                                                                   |
+|-----------------------------|-------------------------------------------------------------------------------|
+| `defs.txt`                  | Definitions of different geometric construction actions.                      |
+| `rules.txt`                 | Deduction rules for DD.                                                       |
 | `geometry_150M_generate.gin`| Gin config of the LM implemented in meliad.                                   |
-| `imo_ag_30.txt`        | Problems in IMO-AG-30.                                                             |
-| `jgex_ag_231.txt`      | Problems in JGEX-AG-231.                                                           |
+| `imo_ag_30.txt`             | Problems in IMO-AG-30.                                                        |
+| `jgex_ag_231.txt`           | Problems in JGEX-AG-231.                                                      |
 
 
 
