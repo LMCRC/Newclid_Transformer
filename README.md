@@ -33,8 +33,14 @@ without the `meliad` and `sentencepiece` dependencies.
 
 ## Run the instructions
 
-All instructions in this `README.md` can be run in one go by:
+All instructions in this `README.md` can be run in two simple steps:
 
+1. Install and download dependencies and weigths:
+```
+bash setup.sh
+```
+
+2. Run AlphaGeometry on an example problem:
 ```
 bash run.sh
 ```
@@ -49,6 +55,11 @@ Installation is done in a virtual environment:
 virtualenv -p python3 .
 source ./bin/activate
 pip install --require-hashes -r requirements.txt
+```
+
+The symbolic solver is isolated in its own package as internal requirement:
+```
+pip install -r requirements_internal.txt
 ```
 
 Download weights and vocabulary:
