@@ -39,17 +39,17 @@ DStackDecoderState = Tuple[tl.DecoderState, ...]
 
 @gin.configurable
 class DecoderStackGenerate(decoder_stack.DecoderStack):
-  """Stack of transformer decoder layers."""
+    """Stack of transformer decoder layers."""
 
-  layer_factory = tl.TransformerLayerGenerate
+    layer_factory = tl.TransformerLayerGenerate
 
-  def init_decoder_state_vanilla(
-      self, sequence_length: int, start_of_sequence: Array
-  ) -> DStackDecoderState:
-    """Return initial state for autoregressive generation."""
-    return tuple(
-        [
-            layer.init_decoder_state_vanilla(sequence_length, start_of_sequence)
-            for layer in self.transformer_layers
-        ]
-    )
+    def init_decoder_state_vanilla(
+        self, sequence_length: int, start_of_sequence: Array
+    ) -> DStackDecoderState:
+        """Return initial state for autoregressive generation."""
+        return tuple(
+            [
+                layer.init_decoder_state_vanilla(sequence_length, start_of_sequence)
+                for layer in self.transformer_layers
+            ]
+        )
