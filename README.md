@@ -33,14 +33,8 @@ without the `meliad` and `sentencepiece` dependencies.
 
 ## Run the instructions
 
-All instructions in this `README.md` can be run in two simple steps:
+All instructions in this `README.md` can be run in one go by:
 
-1. Install and download dependencies and weigths:
-```
-bash setup.sh
-```
-
-2. Run AlphaGeometry on an example problem:
 ```
 bash run.sh
 ```
@@ -57,16 +51,11 @@ source ./bin/activate
 pip install --require-hashes -r requirements.txt
 ```
 
-The symbolic solver is isolated in its own package as internal requirement:
-```
-pip install -r requirements_internal.txt
-```
-
 Download weights and vocabulary:
 
 ```
 bash download.sh
-DATA=ag_ckpt_vocab
+DATA=pt_ckpt
 ```
 
 Finally, install `meliad` separately as it is not
@@ -125,19 +114,10 @@ language model:
 
 ```shell
 LM_ARGS=(
-  --ckpt_path=$DATA \
-  --vocab_path=$DATA/geometry.757.model
-  --gin_search_paths=$MELIAD_PATH/transformer/configs,$(pwd) \
-  --gin_file=base_htrans.gin \
-  --gin_file=size/medium_150M.gin \
-  --gin_file=options/positions_t5.gin \
-  --gin_file=options/lr_cosine_decay.gin \
-  --gin_file=options/seq_1024_nocache.gin \
-  --gin_file=geometry_150M_generate.gin \
-  --gin_param=DecoderOnlyLanguageModelGenerate.output_token_losses=True \
-  --gin_param=TransformerTaskConfig.batch_size=$BATCH_SIZE \
-  --gin_param=TransformerTaskConfig.sequence_length=128 \
-  --gin_param=Trainer.restore_state_variables=False
+  --ckpt_path=$DATA/checkpoint.pt \
+  --vocab_path=$DATA/vocab.model \
+  --num_return_sequences=2 \
+  --beam_width=2
 );
 ```
 
@@ -205,7 +185,7 @@ will write the proof to a text file.
 Running on all problems in `imo_ag_30.txt` will yield solutions to
 14 of them, as reported in Table 1 in our paper.
 
-## Run AlphaGeometry:
+## Run AlphaGeometry pyTorch:
 
 As a simple example, we load `--problem_name=orthocenter`
 from `--problem_file=examples.txt`.
@@ -213,7 +193,7 @@ This time, we pass `--mode=alphageometry` to use the AlphaGeometry solver
 and pass the `SEARCH_ARGS` and `LM_ARGS` flags.
 
 ```shell
-python -m alphageometry \
+python -m alphageometry_pt \
 --alsologtostderr \
 --problems_file=$(pwd)/examples.txt \
 --problem_name=orthocenter \
@@ -277,7 +257,7 @@ E,C,A are collinear [03]
 009. ∠BCE = ∠ADE [10] & E,C,A are collinear [03] & E,B,D are collinear [02] & ∠EBC = ∠EAD [11] ⇒  AD ⟂ BC
 ==========================
 
-alphageometry.py:505] Solved.
+alphageometry_pt.py:581] Solved.
 ```
 
 NOTE: Point `H` is automatically renamed to `D`,
@@ -343,27 +323,37 @@ each of them and their description.
 
 | File name              | Description                                                                        |
 |------------------------|------------------------------------------------------------------------------------|
+| `geometry.py`          | Implements nodes (Point, Line, Circle, etc) in the proof state graph.              |
+| `numericals.py`        | Implements the numerical engine in the dynamic geometry environment.               |
+| `graph_utils.py`       | Implements utilities for the proof state graph.                                    |
+| `graph.py`             | Implements the proof state graph.                                                  |
+| `problem.py`           | Implements the classes that represent the problem premises, conclusion, DAG nodes. |
+| `dd.py`                | Implements DD and its traceback.                                                   |
+| `ar.py`                | Implements AR and its traceback.                                                   |
+| `trace_back.py`        | Implements the recursive traceback and dependency difference algorithm.            |
+| `ddar.py`              | Implements the combination DD+AR.                                                  |
 | `beam_search.py`       | Implements beam decoding of a language model in JAX.                               |
 | `models.py`            | Implements the transformer model.                                                  |
 | `transformer_layer.py` | Implements the transformer layer.                                                  |
 | `decoder_stack.py`     | Implements the transformer decoder stack.                                          |
 | `lm_inference.py`      | Implements an interface to a trained LM to perform decoding.                       |
-| `alphageometry.py`                | Main script that loads problems, calls DD+AR or AlphaGeometry solver, and prints solutions.   |
+| `alphageometry_pt.py`                | Main script that loads problems, calls DD+AR or AlphaGeometry solver, and prints solutions.   |
+| `pretty.py`            | Pretty formating the solutions output by solvers.                                  |
+| `*_test.py`            | Tests for the corresponding module.                                                |
 | `download.sh`          | Script to download model checkpoints and LM                                        |
-| `setup.sh`             | Script to execute setup instructions in README.                                    |
-| `run.sh`               | Script to execute run instructions in README.                                      |
+| `run.sh`               | Script to execute instructions in README.                                          |
 | `run_tests.sh`         | Script to execute the test suite.                                                  |
 
 
 Resource files:
 
-| Resource file name          | Description                                                                   |
-|-----------------------------|-------------------------------------------------------------------------------|
-| `defs.txt`                  | Definitions of different geometric construction actions.                      |
-| `rules.txt`                 | Deduction rules for DD.                                                       |
+| Resource file name     | Description                                                                        |
+|------------------------|------------------------------------------------------------------------------------|
+| `defs.txt`             | Definitions of different geometric construction actions.                           |
+| `rules.txt`            | Deduction rules for DD.                                                            |
 | `geometry_150M_generate.gin`| Gin config of the LM implemented in meliad.                                   |
-| `imo_ag_30.txt`             | Problems in IMO-AG-30.                                                        |
-| `jgex_ag_231.txt`           | Problems in JGEX-AG-231.                                                      |
+| `imo_ag_30.txt`        | Problems in IMO-AG-30.                                                             |
+| `jgex_ag_231.txt`      | Problems in JGEX-AG-231.                                                           |
 
 
 
