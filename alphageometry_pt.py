@@ -58,6 +58,7 @@ _VOCAB_PATH = flags.DEFINE_string(
 )
 _DECODER_BEAM_WIDTH = flags.DEFINE_integer('beam_width', 2, 'beam width for LM decoder')
 _DECODER_NUM_RETURN_SEQS = flags.DEFINE_integer('num_return_sequences', 2, 'number of sequences LM decoder returns for each input')
+_DECODER_DEVICE = flags.DEFINE_string('device', 'cuda', 'compute device for LM')
 _OUT_FILE = flags.DEFINE_string(
     'out_file', '', 'path to the solution output file.'
 )  # pylint: disable=line-too-long
@@ -187,8 +188,9 @@ def write_solution(g: gh.Graph, p: pr.Problem, out_file: str) -> None:
     logging.info('Solution written to %s.', out_file)
 
 
-def get_lm(ckpt_init: str) -> Decoder:
+def get_lm(ckpt_init: str, device: str) -> Decoder:
   decoder = torch.load(ckpt_init)
+  decoder.to(device)
   return decoder
 
 
@@ -543,7 +545,7 @@ def run_alphageometry(
 
     for prev_score, (g, string, pstring) in beam_queue:
       logging.info('Decoding from %s', string)
-      tokens = torch.LongTensor([tokenizer.encode(string)])
+      tokens = torch.LongTensor([tokenizer.encode(string)]).to(_DECODER_DEVICE.value)
       outs = simple_beam_search(model, tokens, beam_width=model_beam_width, num_return_sequences=model_num_return_sequences)
       outputs = {"seqs_str": [tokenizer.decode(o[0])[len(string):].strip() for o in outs], "scores": [o[1] for o in outs]}
       #outputs = model.beam_decode(string, eos_tokens=[';'])
@@ -634,7 +636,7 @@ def main(_):
     run_ddar(g, this_problem, _OUT_FILE.value)
 
   elif _MODE.value == 'alphageometry':
-    model = get_lm(_CKPT_PATH.value)
+    model = get_lm(_CKPT_PATH.value, _DECODER_DEVICE.value)
     tokenizer = get_tokenizer(_VOCAB_PATH.value)
     run_alphageometry(
         model,

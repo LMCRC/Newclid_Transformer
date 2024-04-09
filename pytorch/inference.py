@@ -39,7 +39,7 @@ def simple_beam_search(model, inp, beam_width=2, num_return_sequences=2, eos_idx
                 new_scores[new_idx] = max(new_scores[new_idx], item[1].item())
 
         new_inp = new_inp[:beam_width]
-        inp = torch.LongTensor(new_inp)
+        inp = torch.LongTensor(new_inp).to(inp.device)
         scores = new_scores[:inp.shape[0]]
 
     return sorted(zip(done_seqs, done_scores), key=lambda x: x[1], reverse=True)[:num_return_sequences]
