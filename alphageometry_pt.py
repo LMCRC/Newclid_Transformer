@@ -30,7 +30,10 @@ import problem as pr
 from pytorch.model import *
 from pytorch.inference import *
 import sentencepiece as spm
+import torch
 
+
+torch.requires_grad = False
 
 _PROBLEMS_FILE = flags.DEFINE_string(
     'problems_file',
