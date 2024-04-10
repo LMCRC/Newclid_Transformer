@@ -61,7 +61,7 @@ _CKPT_PATH = flags.DEFINE_string('ckpt_path', '', 'checkpoint of the LM model.')
 _VOCAB_PATH = flags.DEFINE_string(
     'vocab_path', '', 'path to the LM vocab file.'
 )
-_DECODER_BEAM_WIDTH = flags.DEFINE_integer('beam_width', 2, 'beam width for LM decoder')
+_DECODER_BEAM_WIDTH = flags.DEFINE_integer('beam_width', 4, 'beam width for LM decoder')
 _DECODER_NUM_RETURN_SEQS = flags.DEFINE_integer('num_return_sequences', 2, 'number of sequences LM decoder returns for each input')
 _DECODER_DEVICE = flags.DEFINE_string('device', 'cuda', 'compute device for LM')
 _OUT_FILE = flags.DEFINE_string(
@@ -550,9 +550,10 @@ def run_alphageometry(
 
     for prev_score, (g, string, pstring) in beam_queue:
       logging.info('Decoding from %s', string)
-      tokens = torch.LongTensor([tokenizer.encode(string)]).to(_DECODER_DEVICE.value)
-      outs = simple_beam_search(model, tokens, beam_width=model_beam_width, num_return_sequences=model_num_return_sequences)
-      outputs = {"seqs_str": [tokenizer.decode(o[0])[len(string):].strip() for o in outs], "scores": [o[1] for o in outs]}
+      tokens = tokenizer.encode(string)
+      inp = torch.LongTensor([tokens]).to(_DECODER_DEVICE.value)
+      outs = simple_beam_search(model, inp, beam_width=model_beam_width, num_return_sequences=model_num_return_sequences)
+      outputs = {"seqs_str": [tokenizer.decode(o[0][len(tokens):]).strip() for o in outs], "scores": [o[1] for o in outs]}
       #outputs = model.beam_decode(string, eos_tokens=[';'])
 
       # translate lm output to the constructive language.
