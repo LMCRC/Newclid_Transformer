@@ -2,7 +2,7 @@ import torch
 import math
 
 
-def simple_beam_search(model, inp, beam_width=2, num_return_sequences=2, eos_idx=263, max_tokens=128):
+def simple_beam_search(model, inp, beam_width=4, num_return_sequences=2, eos_idx=263, max_tokens=128):
     inp = inp.tile(beam_width, 1)
     scores = [0 for _ in range(beam_width)]
 
