@@ -106,7 +106,7 @@ LM_ARGS=(
   --ckpt_path=$DATA/checkpoint.pt \
   --vocab_path=$DATA/vocab.model \
   --num_return_sequences=2 \
-  --beam_width=2 \
+  --beam_width=4 \
   --device=cuda
 );
 ```
