@@ -48,24 +48,13 @@ Installation is done in a virtual environment:
 ```
 virtualenv -p python3 .
 source ./bin/activate
-pip install --require-hashes -r requirements.txt
+pip install -r requirements.txt
 ```
 
-Download weights and vocabulary:
+Get model weights and tokenizer vocab, and save in pt_ckpt
 
 ```
-bash download.sh
 DATA=pt_ckpt
-```
-
-Finally, install `meliad` separately as it is not
-registered with `pip`:
-
-```
-MELIAD_PATH=meliad_lib/meliad
-mkdir -p $MELIAD_PATH
-git clone https://github.com/google-research/meliad $MELIAD_PATH
-export PYTHONPATH=$PYTHONPATH:$MELIAD_PATH
 ```
 
 ## Set up common flags
@@ -122,11 +111,6 @@ LM_ARGS=(
 );
 ```
 
-TIP: Note that you can still run the DDAR solver
-without defining `SEARCH_ARGS` and `LM_ARGS`.
-In such case, simply disable the import of the `lm_inference` module
-inside `alphageometry.py`.
-
 ## Run DDAR
 
 The script loads a problem by reading a list of problems
@@ -138,7 +122,7 @@ We use `--mode=ddar` to indicate that we want to use the DDAR solver.
 Below we showed this solver solving IMO 2000 P1:
 
 ```shell
-python -m alphageometry \
+python -m alphageometry_pt \
 --alsologtostderr \
 --problems_file=$(pwd)/imo_ag_30.txt \
 --problem_name=translated_imo_2000_p1 \
