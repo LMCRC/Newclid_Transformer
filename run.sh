@@ -46,7 +46,7 @@ LM_ARGS=(
 
 echo $PYTHONPATH
 
-python -m alphageometry_pt \
+python -m alphageometry \
 --alsologtostderr \
 --problems_file=$(pwd)/examples.txt \
 --problem_name=orthocenter \

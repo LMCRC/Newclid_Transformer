@@ -1,8 +1,9 @@
 import torch
-import math
 
 
-def simple_beam_search(model, inp, beam_width=4, num_return_sequences=2, eos_idx=263, max_tokens=128):
+def simple_beam_search(
+    model, inp, beam_width=4, num_return_sequences=2, eos_idx=263, max_tokens=128
+):
     inp = inp.tile(beam_width, 1)
     scores = [0 for _ in range(beam_width)]
 
@@ -11,9 +12,14 @@ def simple_beam_search(model, inp, beam_width=4, num_return_sequences=2, eos_idx
 
     num_new_tokens = 0
 
-    while num_new_tokens < max_tokens and (max(scores) >= max(done_scores, default=-1_000_000) or len(done_seqs) < num_return_sequences):
-        next_scores = model(inp)[:,-1].log_softmax(dim=-1)
-        next_candidates = next_scores.sort(dim=-1, descending=True).indices[:,:beam_width]
+    while num_new_tokens < max_tokens and (
+        max(scores) >= max(done_scores, default=-1_000_000)
+        or len(done_seqs) < num_return_sequences
+    ):
+        next_scores = model(inp)[:, -1].log_softmax(dim=-1)
+        next_candidates = next_scores.sort(dim=-1, descending=True).indices[
+            :, :beam_width
+        ]
         beam_items = []
         for idx, (cur_seq, cands) in enumerate(zip(inp, next_candidates)):
             for cand in cands:
@@ -33,7 +39,7 @@ def simple_beam_search(model, inp, beam_width=4, num_return_sequences=2, eos_idx
         new_inp = [beam_items[0][0].tolist()]
         new_scores = [beam_items[0][1].item()]
         for item in beam_items[1:]:
-            if not (x := item[0].tolist()) in new_inp:
+            if (x := item[0].tolist()) not in new_inp:
                 new_inp.append(x)
                 new_scores.append(item[1].item())
             else:
@@ -42,7 +48,9 @@ def simple_beam_search(model, inp, beam_width=4, num_return_sequences=2, eos_idx
 
         new_inp = new_inp[:beam_width]
         inp = torch.LongTensor(new_inp).to(inp.device)
-        scores = new_scores[:inp.shape[0]]
+        scores = new_scores[: inp.shape[0]]
         num_new_tokens += 1
 
-    return sorted(zip(done_seqs, done_scores), key=lambda x: x[1], reverse=True)[:num_return_sequences]
+    return sorted(zip(done_seqs, done_scores), key=lambda x: x[1], reverse=True)[
+        :num_return_sequences
+    ]
