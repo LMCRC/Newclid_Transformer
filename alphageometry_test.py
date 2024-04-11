@@ -18,7 +18,7 @@
 import unittest
 
 from absl.testing import absltest
-import alphageometry
+import alphageometry_pt as alphageometry
 
 
 class AlphaGeometryTest(unittest.TestCase):
