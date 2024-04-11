@@ -37,3 +37,6 @@ share/
 # LLM vocab
 ag_ckpt_vocab/
 pt_ckpt/
+
+# Outputs
+results/

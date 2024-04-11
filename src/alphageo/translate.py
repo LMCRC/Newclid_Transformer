@@ -146,7 +146,7 @@ def check_valid_args(name: str, args: list[str]) -> bool:
 
 
 def try_translate_constrained_to_construct(
-    string: str, graph: gh.Graph, defs: dict[str, pr.Definition]
+    string: str, existing_points: list[str], defs: dict[str, pr.Definition]
 ) -> str:
     """Whether a string of aux construction can be constructed.
 
@@ -166,7 +166,6 @@ def try_translate_constrained_to_construct(
     if len(point) != 1 or point == " ":
         return f"ERROR: invalid point name {point}"
 
-    existing_points = [p.name for p in graph.all_points()]
     if point in existing_points:
         return f"ERROR: point {point} already exists."
 
@@ -211,11 +210,4 @@ def try_translate_constrained_to_construct(
         constructions += [name + " " + " ".join(args)]
 
     clause_txt += ", ".join(constructions)
-    clause = pr.Clause.from_txt(clause_txt)
-
-    try:
-        graph.copy().add_clause(clause, 0, defs)
-    except:
-        return "ERROR: " + traceback.format_exc()
-
     return clause_txt

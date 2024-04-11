@@ -62,7 +62,7 @@ def run_cli() -> Namespace:
     parser.add_argument(
         "--out-folder",
         "-o",
-        default="./result",
+        default=None,
         help="Path to the solution output folder.",
     )
     parser.add_argument(

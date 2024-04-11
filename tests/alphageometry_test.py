@@ -16,8 +16,10 @@
 """Unit tests for alphageometry.py."""
 
 import pytest
-import alphageo.translate
-import src.alphageo.alphageometry as alphageometry
+
+from alphageo.alphageometry import BeamQueue
+from alphageo.geosolver_facade import insert_aux_to_premise
+from alphageo.translate import translate_constrained_to_constructive
 
 
 class TestAlphaGeometry:
@@ -36,7 +38,7 @@ class TestAlphaGeometry:
         ],
     )
     def test_translate_constrained_to_constructive(self, test_input, expected):
-        actual = alphageo.translate.translate_constrained_to_constructive(*test_input)
+        actual = translate_constrained_to_constructive(*test_input)
         assert actual == expected
 
     def test_insert_aux_to_premise(self):
@@ -53,10 +55,10 @@ class TestAlphaGeometry:
             "e = on_line e a c, on_line e b d "
             "? perp a d b c"
         )  # pylint: disable=line-too-long
-        assert alphageometry.insert_aux_to_premise(pstring, auxstring) == target
+        assert insert_aux_to_premise(pstring, auxstring) == target
 
     def test_beam_queue(self):
-        beam_queue = alphageometry.BeamQueue(max_size=2)
+        beam_queue = BeamQueue(max_size=2)
 
         beam_queue.add("a", 1)
         beam_queue.add("b", 2)
