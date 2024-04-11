@@ -46,7 +46,7 @@ class TestAlphaGeometry:
             "a b c = triangle a b c; "
             "d = on_tline d b a c, on_tline d c a b "
             "? perp a d b c"
-        )  # pylint: disable=line-too-long
+        )
         auxstring = "e = on_line e a c, on_line e b d"
 
         target = (
@@ -54,7 +54,7 @@ class TestAlphaGeometry:
             "d = on_tline d b a c, on_tline d c a b; "
             "e = on_line e a c, on_line e b d "
             "? perp a d b c"
-        )  # pylint: disable=line-too-long
+        )
         assert insert_aux_to_premise(pstring, auxstring) == target
 
     def test_beam_queue(self):

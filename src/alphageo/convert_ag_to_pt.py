@@ -3,6 +3,14 @@ import torch
 from pytorch.model import Decoder
 
 
+def get_model():
+    raise NotImplementedError()
+
+
+def setup():
+    raise NotImplementedError()
+
+
 def convert():
     _DATA_PATH, _MELIAD_PATH, _OUT_FILE = setup()
     ag_model = get_model(_DATA_PATH, _MELIAD_PATH)

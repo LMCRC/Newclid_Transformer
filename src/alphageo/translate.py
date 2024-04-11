@@ -1,11 +1,10 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
-import geosolver.graph as gh
-import geosolver.pretty as pt
-import geosolver.problem as pr
+from geosolver.pretty import map_symbol
 
-
-import traceback
+if TYPE_CHECKING:
+    from geosolver.problem import Definition
 
 
 def translate_constrained_to_constructive(
@@ -53,7 +52,7 @@ def translate_constrained_to_constructive(
             return "on_bline", [a, b, d]
         if b in [c, d]:
             if b == d:
-                c, d = d, c  # pylint: disable=unused-variable
+                c, d = d, c
             return "on_circle", [a, b, d]
         return "eqdistance", [a, b, c, d]
 
@@ -146,7 +145,7 @@ def check_valid_args(name: str, args: list[str]) -> bool:
 
 
 def try_translate_constrained_to_construct(
-    string: str, existing_points: list[str], defs: dict[str, pr.Definition]
+    string: str, existing_points: list[str], defs: dict[str, "Definition"]
 ) -> str:
     """Whether a string of aux construction can be constructed.
 
@@ -191,7 +190,7 @@ def try_translate_constrained_to_construct(
         if point not in args:
             return f"ERROR: {point} not found in predicate args."
 
-        if not check_valid_args(pt.map_symbol(name), args):
+        if not check_valid_args(map_symbol(name), args):
             return "ERROR: Invalid predicate " + name + " " + " ".join(args)
 
         for a in args:
@@ -200,7 +199,7 @@ def try_translate_constrained_to_construct(
 
         try:
             name, args = translate_constrained_to_constructive(point, name, args)
-        except:
+        except ValueError:
             return "ERROR: Invalid predicate " + name + " " + " ".join(args)
 
         if name == "on_aline":
