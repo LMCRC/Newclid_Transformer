@@ -1,7 +1,6 @@
 numpy
 scipy
 matplotlib
-absl-py>=1.4.0
 sentencepiece>=0.1.99
 
 # Internal dependency, install must be done through ssh or with access token
