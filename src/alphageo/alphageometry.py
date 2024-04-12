@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Optional
 
 import sentencepiece as spm
 import torch
-
+import os
 
 from alphageo.translate import try_translate_constrained_to_construct
 from alphageo.inference import simple_beam_search
@@ -178,8 +178,12 @@ def run_alphageometry(
 
 
 def get_lm(ckpt_init: Path, device: str) -> "Decoder":
-    decoder = torch.load(ckpt_init)
+    cfg = torch.load(os.path.join(ckpt_init, "cfg.sav"))
+    decoder = Decoder(cfg)
+    params = torch.load(os.path.join(ckpt_init, "params.sav"))
+    decoder.load_state_dict(params)
     decoder.to(device)
+    decoder.bfloat16()
     return decoder
 
 
