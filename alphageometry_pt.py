@@ -33,9 +33,10 @@ from pytorch.model import *
 from pytorch.inference import *
 import sentencepiece as spm
 import torch
+import os
 
 
-torch.requires_grad = False
+torch.set_grad_enabled(False)
 
 _PROBLEMS_FILE = flags.DEFINE_string(
     'problems_file',
@@ -193,9 +194,13 @@ def write_solution(g: gh.Graph, p: pr.Problem, out_file: str) -> None:
     logging.info('Solution written to %s.', out_file)
 
 
-def get_lm(ckpt_init: str, device: str) -> Decoder:
-  decoder = torch.load(ckpt_init)
+def get_lm(ckpt_path: str, device: str) -> Decoder:
+  cfg = torch.load(os.path.join(ckpt_path, "cfg.sav"))
+  decoder = Decoder(cfg)
+  params = torch.load(os.path.join(ckpt_path, "params.sav"))
+  decoder.load_state_dict(params)
   decoder.to(device)
+  decoder.to(torch.bfloat16)
   return decoder
 
 
@@ -552,6 +557,7 @@ def run_alphageometry(
       logging.info('Decoding from %s', string)
       tokens = tokenizer.encode(string)
       inp = torch.LongTensor([tokens]).to(_DECODER_DEVICE.value)
+
       outs = simple_beam_search(model, inp, beam_width=model_beam_width, num_return_sequences=model_num_return_sequences)
       outputs = {"seqs_str": [tokenizer.decode(o[0][len(tokens):]).strip() for o in outs], "scores": [o[1] for o in outs]}
       #outputs = model.beam_decode(string, eos_tokens=[';'])

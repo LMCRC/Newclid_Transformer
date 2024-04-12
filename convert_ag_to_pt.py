@@ -1,10 +1,11 @@
 from get_model import *
 from pytorch.model import *
+import os
 torch.set_grad_enabled(False)
 
 
 def convert():
-    _DATA_PATH, _MELIAD_PATH, _OUT_FILE = setup()
+    _DATA_PATH, _MELIAD_PATH, _OUT_FOLDER = setup()
     ag_model = get_model(_DATA_PATH, _MELIAD_PATH)
 
     cfg = {"vocab_size": 1024, "embedding_dim": 1024, "num_layers": 12, "num_heads": 8, "mlp_num_layers": 2, "mlp_hidden_dim": 4096, "t5_num_buckets": 32, "t5_max_distance": 128}
@@ -53,7 +54,9 @@ def convert():
     _ = pt_model.final_layernorm.weight.data.copy_(torch.Tensor(ag_state["final_layernorm"]["scale"]))
 
     print("\nsaving model...", end="")
-    torch.save(pt_model, _OUT_FILE.value)
+    os.makedirs(_OUT_FOLDER.value, exist_ok=True)
+    torch.save(cfg, os.path.join(_OUT_FOLDER.value, "cfg.sav"))
+    torch.save(pt_model.state_dict(), os.path.join(_OUT_FOLDER.value, "params.sav"))
     print("done")
 
 

@@ -45,6 +45,22 @@ class T5RelativeEmbeddings(nn.Module):
         return values
 
 
+class AGLayerNorm(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.num_ele = config["embedding_dim"]
+        self.epsilon = config.get("layernorm_epsilon", 1e-6)
+        self.register_parameter(name='weight', param=nn.Parameter(torch.ones(self.num_ele, )))
+
+    def forward(self, xs):
+        xln = xs.to(torch.float32)
+        var = torch.mean(torch.square(xln), dim=-1, keepdims=True)
+        mul = torch.rsqrt(var + self.epsilon)
+        ys = xs * mul
+        ys = ys * self.weight
+        return ys.to(xs.dtype)
+
+
 class QKVLayer(nn.Module):
     """Generate keys, values, and queries for attention."""
 
@@ -64,7 +80,7 @@ class QKVLayer(nn.Module):
         self.keys_layer = nn.Linear(self.embedding_dim, self.embedding_dim, bias=False)
         self.values_layer = nn.Linear(self.embedding_dim, self.embedding_dim, bias=False)
 
-        self.pre_attn_layernorm = nn.LayerNorm(config["embedding_dim"], bias=False)
+        self.pre_attn_layernorm = AGLayerNorm(config)
 
     def _normalize_kq(self, kq):
         epsilon = 1.0e-6
@@ -155,7 +171,7 @@ class DecoderLayer(nn.Module):
 
         self.post_attn_mlp = nn.Linear(self.embedding_dim, self.embedding_dim, bias=False)
         self.ffn = MLP(config)
-        self.pre_ffn_layernorm = nn.LayerNorm(config["embedding_dim"], bias=False)
+        self.pre_ffn_layernorm = AGLayerNorm(config)
 
     def _get_causal_mask(self, num_qs, num_ks):
         qidx = torch.arange(0, num_qs).reshape(num_qs, 1)
@@ -194,7 +210,7 @@ class Decoder(nn.Module):
         self.config = config
         self.embedding = nn.Embedding(config["vocab_size"], config["embedding_dim"])
         self.layers = nn.ModuleList([DecoderLayer(config) for _ in range(config["num_layers"])])
-        self.final_layernorm = nn.LayerNorm(config["embedding_dim"], bias=False)
+        self.final_layernorm = AGLayerNorm(config)
 
     def forward(self, xs):
         ys = self.embedding(xs)
