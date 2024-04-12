@@ -21,18 +21,19 @@ Please refer to README.md for detailed instructions.
 from __future__ import annotations
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 
 import sentencepiece as spm
 import torch
 
-from alphageo.geosolver_facade import GeometricSolver
+
 from alphageo.translate import try_translate_constrained_to_construct
 from alphageo.inference import simple_beam_search
 
 if TYPE_CHECKING:
     from pytorch.model import Decoder
+    from geosolver import GeometricSolver
 
 
 def run_alphageometry(
@@ -44,7 +45,7 @@ def run_alphageometry(
     model_num_return_sequences: int,
     search_depth: int,
     beam_size: int,
-    out_folder: Path,
+    out_folder: Optional[Path] = None,
 ) -> bool:
     """Simplified code to run AlphaGeometry proof search.
 
@@ -69,10 +70,11 @@ def run_alphageometry(
     """
     # First we run the symbolic engine DD+AR:
 
-    success = solver.run_solver()
+    success = solver.run()
     if success:
-        solver.write_solution(out_folder / "proof_steps.txt")
-        solver.draw_figure(out_folder / "proof_figure.png")
+        if out_folder is not None:
+            solver.write_solution(out_folder / "proof_steps.txt")
+            solver.draw_figure(out_folder / "proof_figure.png")
         return True
 
     # translate the problem to a string of grammar that the LM is trained on.
@@ -128,7 +130,7 @@ def run_alphageometry(
 
             for lm_out, score in candidates:
                 solver.load_state(proof_state)
-                solver.load_pstring(pstring)
+                solver.load_problem_string(pstring)
 
                 logging.info('LM output (score=%f): "%s"', score, lm_out)
 
@@ -144,10 +146,11 @@ def run_alphageometry(
                 logging.info('Translation: "%s"\n', aux_string)
 
                 solver.add_auxiliary_construction(aux_string)
-                success = solver.run_solver()
+                success = solver.run()
                 if success:
-                    solver.write_solution(out_folder / "proof_steps.txt")
-                    solver.draw_figure(out_folder / "proof_figure.png")
+                    if out_folder is not None:
+                        solver.write_solution(out_folder / "proof_steps.txt")
+                        solver.draw_figure(out_folder / "proof_figure.png")
                     return True
 
                 # Add the candidate to the beam queue.
@@ -174,14 +177,14 @@ def run_alphageometry(
     return False
 
 
-def get_lm(ckpt_init: str, device: str) -> "Decoder":
+def get_lm(ckpt_init: Path, device: str) -> "Decoder":
     decoder = torch.load(ckpt_init)
     decoder.to(device)
     return decoder
 
 
-def get_tokenizer(vocab_path: str) -> spm.SentencePieceProcessor:
-    tokenizer = spm.SentencePieceProcessor(vocab_path)
+def get_tokenizer(vocab_path: Path) -> spm.SentencePieceProcessor:
+    tokenizer = spm.SentencePieceProcessor(str(vocab_path))
     return tokenizer
 
 

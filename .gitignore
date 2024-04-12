@@ -40,3 +40,6 @@ pt_ckpt/
 
 # Outputs
 results/
+
+# Coverage data
+.coverage

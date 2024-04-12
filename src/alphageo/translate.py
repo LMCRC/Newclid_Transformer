@@ -1,10 +1,37 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from geosolver.pretty import map_symbol
 
 if TYPE_CHECKING:
     from geosolver.problem import Definition
+
+MAP_SYMBOL = {
+    "T": "perp",
+    "P": "para",
+    "D": "cong",
+    "S": "simtri",
+    "I": "circle",
+    "M": "midp",
+    "O": "cyclic",
+    "C": "coll",
+    "^": "eqangle",
+    "/": "eqratio",
+    "%": "eqratio",
+    "=": "contri",
+    "X": "collx",
+    "A": "acompute",
+    "R": "rcompute",
+    "Q": "fixc",
+    "E": "fixl",
+    "V": "fixb",
+    "H": "fixt",
+    "Z": "fixp",
+    "Y": "ind",
+}
+
+
+def map_symbol(c: str) -> str:
+    return MAP_SYMBOL[c]
 
 
 def translate_constrained_to_constructive(

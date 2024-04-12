@@ -7,10 +7,10 @@ from alphageo.cli import run_cli
 import torch
 
 
-from alphageo.geosolver_facade import GeometricSolver
+from geosolver import GeometricSolverBuilder
 
 
-def main():
+def main() -> bool:
     args = run_cli()
 
     # when using the language model,
@@ -25,17 +25,22 @@ def main():
     out_path = Path(out_folder)
     out_path.mkdir(parents=True, exist_ok=True)
 
-    solver = GeometricSolver.build_from_files(
-        args.defs, args.rules, args.problems, args.problem, translate=need_rename
+    solver_builder = GeometricSolverBuilder().load_problem_from_file(
+        problems_path=args.problems, problem_name=args.problem, translate=need_rename
     )
+    if args.defs is not None:
+        solver_builder.load_defs_from_file(args.defs)
+    if args.rules is not None:
+        solver_builder.load_rules_from_file(args.rules)
+    solver = solver_builder.build()
 
     if args.solver_only:
-        return solver.run_solver()
+        return solver.run()
 
     torch.requires_grad = False
     model = get_lm(args.ckpt, args.device)
     tokenizer = get_tokenizer(args.vocab)
-    run_alphageometry(
+    return run_alphageometry(
         solver,
         model,
         tokenizer,

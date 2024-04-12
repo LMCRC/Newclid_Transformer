@@ -5,4 +5,4 @@ absl-py>=1.4.0
 sentencepiece>=0.1.99
 
 # Internal dependency, install must be done through ssh or with access token
-geosolver @ git+ssh://git@rnd-gitlab-eu.huawei.com:2222/Noahs-Ark/libraries/geosolver.git@v1.0.0#egg=geosolver
+geosolver @ git+ssh://git@rnd-gitlab-eu.huawei.com:2222/Noahs-Ark/libraries/geosolver.git@release/v1.1.0#egg=geosolver

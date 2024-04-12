@@ -17,15 +17,15 @@ def run_cli() -> Namespace:
     )
     parser.add_argument(
         "--defs",
-        default="defs.txt",
+        default=None,
         help="Path to definitions of available constructions to state a problem."
-        " See geosolver for more details.",
+        " Defaults to geosolver's default. See geosolver for more details.",
     )
     parser.add_argument(
         "--rules",
-        default="rules.txt",
+        default=None,
         help="Path to the list of deduction (explicit) rules used by DD."
-        " See geosolver for more details.",
+        " Defaults to geosolver's default. See geosolver for more details.",
     )
     parser.add_argument(
         "--solver-only",
