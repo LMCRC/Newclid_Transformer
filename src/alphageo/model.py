@@ -1,15 +1,39 @@
-import torch
-from torch import nn
+from alphageo.optional_imports import raise_if_instanciated
+
+
+try:
+    import torch
+    from torch.nn import (
+        Module,
+        ModuleList,
+        Embedding,
+        Parameter,
+        Dropout,
+        Linear,
+        Sequential,
+        ReLU,
+    )
+except ImportError:
+    torch = object()
+    Module = raise_if_instanciated("torch")
+    ModuleList = raise_if_instanciated("torch")
+    Embedding = raise_if_instanciated("torch")
+    Parameter = raise_if_instanciated("torch")
+    Dropout = raise_if_instanciated("torch")
+    Linear = raise_if_instanciated("torch")
+    Sequential = raise_if_instanciated("torch")
+    ReLU = raise_if_instanciated("torch")
+
 import math
 
 
-class T5RelativeEmbeddings(nn.Module):
+class T5RelativeEmbeddings(Module):
     def __init__(self, config):
         super().__init__()
         self.num_buckets = config["t5_num_buckets"]
         self.max_distance = config["t5_max_distance"]
         self.num_heads = config["num_heads"]
-        self.relative_attention_bias = nn.Embedding(self.num_buckets, self.num_heads)
+        self.relative_attention_bias = Embedding(self.num_buckets, self.num_heads)
 
     def _relative_position_bucket(self, relative_position):
         relative_buckets = 0
@@ -62,14 +86,14 @@ class T5RelativeEmbeddings(nn.Module):
         return values
 
 
-class AGLayerNorm(nn.Module):
+class AGLayerNorm(Module):
     def __init__(self, config):
         super().__init__()
         self.num_ele = config["embedding_dim"]
         self.epsilon = config.get("layernorm_epsilon", 1e-6)
         self.register_parameter(
             name="weight",
-            param=nn.Parameter(
+            param=Parameter(
                 torch.ones(
                     self.num_ele,
                 )
@@ -85,7 +109,7 @@ class AGLayerNorm(nn.Module):
         return ys.to(xs.dtype)
 
 
-class QKVLayer(nn.Module):
+class QKVLayer(Module):
     """Generate keys, values, and queries for attention."""
 
     def __init__(self, config):
@@ -98,15 +122,11 @@ class QKVLayer(nn.Module):
         self.normalize_keys = config.get("normalize_keys", True)
         self.pre_attn_dropout = None
         if (dropout_rate := config.get("pre_attn_dropout", 0.0)) > 0.0:
-            self.pre_attn_droput = nn.Dropout(dropout_rate)
+            self.pre_attn_droput = Dropout(dropout_rate)
 
-        self.queries_layer = nn.Linear(
-            self.embedding_dim, self.embedding_dim, bias=False
-        )
-        self.keys_layer = nn.Linear(self.embedding_dim, self.embedding_dim, bias=False)
-        self.values_layer = nn.Linear(
-            self.embedding_dim, self.embedding_dim, bias=False
-        )
+        self.queries_layer = Linear(self.embedding_dim, self.embedding_dim, bias=False)
+        self.keys_layer = Linear(self.embedding_dim, self.embedding_dim, bias=False)
+        self.values_layer = Linear(self.embedding_dim, self.embedding_dim, bias=False)
 
         self.pre_attn_layernorm = AGLayerNorm(config)
 
@@ -140,7 +160,7 @@ class QKVLayer(nn.Module):
         return queries, keys, values
 
 
-class MLP(nn.Module):
+class MLP(Module):
     def __init__(self, config):
         super().__init__()
 
@@ -149,14 +169,14 @@ class MLP(nn.Module):
         modules = []
         for i in range(0, config["mlp_num_layers"] - 1):
             modules.append(
-                nn.Sequential(
-                    nn.Linear(cur_dim, config["mlp_hidden_dim"], bias=False), nn.ReLU()
+                Sequential(
+                    Linear(cur_dim, config["mlp_hidden_dim"], bias=False), ReLU()
                 )
             )
             cur_dim = config["mlp_hidden_dim"]
 
-        modules.append(nn.Linear(cur_dim, config["embedding_dim"], bias=False))
-        self.layers = nn.ModuleList(modules)
+        modules.append(Linear(cur_dim, config["embedding_dim"], bias=False))
+        self.layers = ModuleList(modules)
 
     def forward(self, xs):
         for layer in self.layers:
@@ -165,7 +185,7 @@ class MLP(nn.Module):
         return xs
 
 
-class DecoderLayer(nn.Module):
+class DecoderLayer(Module):
     def __init__(self, config):
         super().__init__()
 
@@ -181,19 +201,19 @@ class DecoderLayer(nn.Module):
 
         self.attn_dropout = None
         if (dropout_rate := config.get("attn_dropout", 0.0)) > 0.0:
-            self.attn_droput = nn.Dropout(dropout_rate)
+            self.attn_droput = Dropout(dropout_rate)
 
         self.post_attn_dropout = None
         if (dropout_rate := config.get("post_attn_dropout", 0.0)) > 0.0:
-            self.post_attn_droput = nn.Dropout(dropout_rate)
+            self.post_attn_droput = Dropout(dropout_rate)
 
         self.pre_ffn_dropout = None
         if (dropout_rate := config.get("pre_ffn_dropout", 0.0)) > 0.0:
-            self.pre_ffn_droput = nn.Dropout(dropout_rate)
+            self.pre_ffn_droput = Dropout(dropout_rate)
 
         self.post_ffn_dropout = None
         if (dropout_rate := config.get("post_ffn_dropout", 0.0)) > 0.0:
-            self.post_ffn_droput = nn.Dropout(dropout_rate)
+            self.post_ffn_droput = Dropout(dropout_rate)
 
         self.qkv = QKVLayer(config)
 
@@ -201,16 +221,14 @@ class DecoderLayer(nn.Module):
         if self.normalize_keys:
             self.register_parameter(
                 name="attention_scale_factors",
-                param=nn.Parameter(
+                param=Parameter(
                     torch.ones(
                         self.num_heads,
                     )
                 ),
             )
 
-        self.post_attn_mlp = nn.Linear(
-            self.embedding_dim, self.embedding_dim, bias=False
-        )
+        self.post_attn_mlp = Linear(self.embedding_dim, self.embedding_dim, bias=False)
         self.ffn = MLP(config)
         self.pre_ffn_layernorm = AGLayerNorm(config)
 
@@ -250,12 +268,12 @@ class DecoderLayer(nn.Module):
         return ys
 
 
-class Decoder(nn.Module):
+class Decoder(Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        self.embedding = nn.Embedding(config["vocab_size"], config["embedding_dim"])
-        self.layers = nn.ModuleList(
+        self.embedding = Embedding(config["vocab_size"], config["embedding_dim"])
+        self.layers = ModuleList(
             [DecoderLayer(config) for _ in range(config["num_layers"])]
         )
         self.final_layernorm = AGLayerNorm(config)

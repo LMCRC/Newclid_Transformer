@@ -75,3 +75,7 @@ exclude_also = [
     # Don't complain about optional imports, they don't matter for now:
     "except ImportError:"
 ]
+omit = [
+    # Don't cover optional_imports because it makes no sense to test it:
+    "optional_imports.py",
+]

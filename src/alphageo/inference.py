@@ -1,4 +1,11 @@
-import torch
+from alphageo.optional_imports import raise_if_called, raise_if_instanciated
+
+
+try:
+    from torch import cat, LongTensor
+except ImportError:
+    cat = raise_if_called("torch")
+    LongTensor = raise_if_instanciated("torch")
 
 
 def simple_beam_search(
@@ -23,7 +30,7 @@ def simple_beam_search(
         beam_items = []
         for idx, (cur_seq, cands) in enumerate(zip(inp, next_candidates)):
             for cand in cands:
-                new_seq = torch.cat([cur_seq, cand.unsqueeze(0)])
+                new_seq = cat([cur_seq, cand.unsqueeze(0)])
                 new_score = scores[idx] + next_scores[idx][cand]
                 if cand == eos_idx:
                     if (seq_list := new_seq.tolist()) not in done_seqs:
@@ -47,7 +54,7 @@ def simple_beam_search(
                 new_scores[new_idx] = max(new_scores[new_idx], item[1].item())
 
         new_inp = new_inp[:beam_width]
-        inp = torch.LongTensor(new_inp).to(inp.device)
+        inp = LongTensor(new_inp).to(inp.device)
         scores = new_scores[: inp.shape[0]]
         num_new_tokens += 1
 

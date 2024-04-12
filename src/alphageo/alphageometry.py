@@ -25,12 +25,18 @@ from typing import TYPE_CHECKING, Optional
 
 
 import sentencepiece as spm
-import torch
 import os
 
 from alphageo.model import Decoder
 from alphageo.translate import try_translate_constrained_to_construct
 from alphageo.inference import simple_beam_search
+from alphageo.optional_imports import raise_if_called, raise_if_instanciated
+
+try:
+    from torch import load, LongTensor
+except ImportError:
+    load = raise_if_called("torch")
+    LongTensor = raise_if_instanciated("torch")
 
 if TYPE_CHECKING:
     from geosolver import GeometricSolver
@@ -104,7 +110,7 @@ def run_alphageometry(
         for prev_score, (proof_state, string, pstring) in beam_queue:
             logging.info("Decoding from %s", string)
             tokens = tokenizer.encode(string)
-            inp = torch.LongTensor([tokens]).to(device)
+            inp = LongTensor([tokens]).to(device)
             outs = simple_beam_search(
                 model,
                 inp,
@@ -178,9 +184,9 @@ def run_alphageometry(
 
 
 def get_lm(ckpt_init: Path, device: str) -> "Decoder":
-    cfg = torch.load(os.path.join(ckpt_init, "cfg.sav"))
+    cfg = load(os.path.join(ckpt_init, "cfg.sav"))
     decoder = Decoder(cfg)
-    params = torch.load(os.path.join(ckpt_init, "params.sav"))
+    params = load(os.path.join(ckpt_init, "params.sav"))
     decoder.load_state_dict(params)
     decoder.to(device)
     decoder.bfloat16()

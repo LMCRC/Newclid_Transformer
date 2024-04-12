@@ -3,8 +3,10 @@ from pathlib import Path
 from alphageo.alphageometry import get_lm, get_tokenizer, run_alphageometry
 from alphageo.cli import DEFAULT_OUTPUT, run_cli
 
-
-import torch
+try:
+    import torch
+except ImportError:
+    torch = object()
 
 
 from geosolver import GeometricSolverBuilder
