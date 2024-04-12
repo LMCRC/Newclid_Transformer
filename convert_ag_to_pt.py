@@ -1,6 +1,6 @@
 import torch
 
-from pytorch.model import Decoder
+from alphageo.model import Decoder
 
 
 def get_model():

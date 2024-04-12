@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from alphageo.alphageometry import get_lm, get_tokenizer, run_alphageometry
-from alphageo.cli import run_cli
+from alphageo.cli import DEFAULT_OUTPUT, run_cli
 
 
 import torch
@@ -20,10 +20,11 @@ def main() -> bool:
     need_rename = not args.solver_only
 
     out_folder = args.out_folder
-    if out_folder is None:
+    if out_folder == DEFAULT_OUTPUT:
         out_folder = f"results/{args.problem}"
-    out_path = Path(out_folder)
-    out_path.mkdir(parents=True, exist_ok=True)
+    if out_folder is not None:
+        out_folder = Path(out_folder)
+        out_folder.mkdir(parents=True, exist_ok=True)
 
     solver_builder = GeometricSolverBuilder().load_problem_from_file(
         problems_path=args.problems, problem_name=args.problem, translate=need_rename
@@ -35,7 +36,11 @@ def main() -> bool:
     solver = solver_builder.build()
 
     if args.solver_only:
-        return solver.run()
+        success = solver.run()
+        if success and out_folder is not None:
+            solver.write_solution(out_folder / "proof_steps.txt")
+            solver.draw_figure(out_folder / "proof_figure.png")
+        return success
 
     torch.requires_grad = False
     model = get_lm(args.ckpt, args.device)
@@ -49,7 +54,7 @@ def main() -> bool:
         args.batch_size,
         args.search_depth,
         args.search_width,
-        out_path,
+        out_folder,
     )
 
 

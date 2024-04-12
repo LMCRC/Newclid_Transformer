@@ -28,11 +28,11 @@ import sentencepiece as spm
 import torch
 import os
 
+from alphageo.model import Decoder
 from alphageo.translate import try_translate_constrained_to_construct
 from alphageo.inference import simple_beam_search
 
 if TYPE_CHECKING:
-    from pytorch.model import Decoder
     from geosolver import GeometricSolver
 
 

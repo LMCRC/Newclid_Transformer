@@ -1,5 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
+DEFAULT_OUTPUT = "#Default"
+
 
 def run_cli() -> Namespace:
     parser = ArgumentParser("alphageo")
@@ -34,7 +36,7 @@ def run_cli() -> Namespace:
     )
     parser.add_argument(
         "--ckpt",
-        default="pt_ckpt/checkpoint.pt",
+        default="pt_ckpt",
         help="Path to the checkpoint of the LM model.",
     )
     parser.add_argument(
@@ -62,7 +64,7 @@ def run_cli() -> Namespace:
     parser.add_argument(
         "--out-folder",
         "-o",
-        default=None,
+        default=DEFAULT_OUTPUT,
         help="Path to the solution output folder.",
     )
     parser.add_argument(

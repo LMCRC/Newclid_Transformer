@@ -67,7 +67,14 @@ class AGLayerNorm(nn.Module):
         super().__init__()
         self.num_ele = config["embedding_dim"]
         self.epsilon = config.get("layernorm_epsilon", 1e-6)
-        self.register_parameter(name='weight', param=nn.Parameter(torch.ones(self.num_ele, )))
+        self.register_parameter(
+            name="weight",
+            param=nn.Parameter(
+                torch.ones(
+                    self.num_ele,
+                )
+            ),
+        )
 
     def forward(self, xs):
         xln = xs.to(torch.float32)
@@ -114,7 +121,7 @@ class QKVLayer(nn.Module):
 
         xs = self.pre_attn_layernorm(xs)
 
-        if self.pre_attn_dropout != None:
+        if self.pre_attn_dropout is not None:
             xs = self.pre_attn_dropout(xs)
 
         queries = self.queries_layer(xs)
@@ -218,7 +225,11 @@ class DecoderLayer(nn.Module):
 
         queries, keys, values = self.qkv(xs)
         rel_position_bias = self.relative_positions(seq_length, seq_length)
-        causal_mask = self._get_causal_mask(seq_length, seq_length).to(queries.device).tile((self.num_heads, 1, 1))
+        causal_mask = (
+            self._get_causal_mask(seq_length, seq_length)
+            .to(queries.device)
+            .tile((self.num_heads, 1, 1))
+        )
 
         attn = torch.einsum("...qhd,...khd->...hqk", queries, keys)
         attn = attn + rel_position_bias
@@ -244,7 +255,9 @@ class Decoder(nn.Module):
         super().__init__()
         self.config = config
         self.embedding = nn.Embedding(config["vocab_size"], config["embedding_dim"])
-        self.layers = nn.ModuleList([DecoderLayer(config) for _ in range(config["num_layers"])])
+        self.layers = nn.ModuleList(
+            [DecoderLayer(config) for _ in range(config["num_layers"])]
+        )
         self.final_layernorm = AGLayerNorm(config)
 
     def forward(self, xs):
