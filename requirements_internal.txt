@@ -1,2 +1,0 @@
-# Internal dependency, install must be done through ssh or with access token
-geosolver @ git+ssh://git@rnd-gitlab-eu.huawei.com:2222/Noahs-Ark/libraries/geosolver.git#egg=geosolver
