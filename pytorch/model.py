@@ -13,7 +13,9 @@ class T5RelativeEmbeddings(nn.Module):
 
     def _relative_position_bucket(self, relative_position):
         relative_buckets = 0
-        relative_position = -torch.min(relative_position, torch.zeros_like(relative_position))
+        relative_position = -torch.min(
+            relative_position, torch.zeros_like(relative_position)
+        )
         # now relative_position is in the range [0, inf)
 
         # half of the buckets are for exact increments in positions
@@ -27,21 +29,36 @@ class T5RelativeEmbeddings(nn.Module):
             * (self.num_buckets - max_exact)
         ).to(torch.long)
         relative_position_if_large = torch.min(
-            relative_position_if_large, torch.full_like(relative_position_if_large, self.num_buckets - 1)
+            relative_position_if_large,
+            torch.full_like(relative_position_if_large, self.num_buckets - 1),
         )
 
-        relative_buckets += torch.where(is_small, relative_position, relative_position_if_large)
+        relative_buckets += torch.where(
+            is_small, relative_position, relative_position_if_large
+        )
         return relative_buckets
 
     def forward(self, query_length, key_length):
         """Compute binned relative position bias"""
         device = self.relative_attention_bias.weight.device
-        context_position = torch.arange(query_length, dtype=torch.long, device=device)[:, None]
-        memory_position = torch.arange(key_length, dtype=torch.long, device=device)[None, :]
-        relative_position = memory_position - context_position  # shape (query_length, key_length)
-        relative_position_bucket = self._relative_position_bucket(relative_position)  # shape (query_length, key_length)
-        values = self.relative_attention_bias(relative_position_bucket)  # shape (query_length, key_length, num_heads)
-        values = values.permute([2, 0, 1]).unsqueeze(0)  # shape (1, num_heads, query_length, key_length)
+        context_position = torch.arange(query_length, dtype=torch.long, device=device)[
+            :, None
+        ]
+        memory_position = torch.arange(key_length, dtype=torch.long, device=device)[
+            None, :
+        ]
+        relative_position = (
+            memory_position - context_position
+        )  # shape (query_length, key_length)
+        relative_position_bucket = self._relative_position_bucket(
+            relative_position
+        )  # shape (query_length, key_length)
+        values = self.relative_attention_bias(
+            relative_position_bucket
+        )  # shape (query_length, key_length, num_heads)
+        values = values.permute([2, 0, 1]).unsqueeze(
+            0
+        )  # shape (1, num_heads, query_length, key_length)
         return values
 
 
@@ -69,16 +86,20 @@ class QKVLayer(nn.Module):
 
         self.embedding_dim = config["embedding_dim"]
         self.num_heads = config["num_heads"]
-        self.head_dim = self.embedding_dim//self.num_heads
+        self.head_dim = self.embedding_dim // self.num_heads
 
         self.normalize_keys = config.get("normalize_keys", True)
         self.pre_attn_dropout = None
         if (dropout_rate := config.get("pre_attn_dropout", 0.0)) > 0.0:
             self.pre_attn_droput = nn.Dropout(dropout_rate)
 
-        self.queries_layer = nn.Linear(self.embedding_dim, self.embedding_dim, bias=False)
+        self.queries_layer = nn.Linear(
+            self.embedding_dim, self.embedding_dim, bias=False
+        )
         self.keys_layer = nn.Linear(self.embedding_dim, self.embedding_dim, bias=False)
-        self.values_layer = nn.Linear(self.embedding_dim, self.embedding_dim, bias=False)
+        self.values_layer = nn.Linear(
+            self.embedding_dim, self.embedding_dim, bias=False
+        )
 
         self.pre_attn_layernorm = AGLayerNorm(config)
 
@@ -119,8 +140,12 @@ class MLP(nn.Module):
         cur_dim = config["embedding_dim"]
 
         modules = []
-        for i in range(0, config["mlp_num_layers"]-1):
-            modules.append(nn.Sequential(nn.Linear(cur_dim, config["mlp_hidden_dim"], bias=False), nn.ReLU()))
+        for i in range(0, config["mlp_num_layers"] - 1):
+            modules.append(
+                nn.Sequential(
+                    nn.Linear(cur_dim, config["mlp_hidden_dim"], bias=False), nn.ReLU()
+                )
+            )
             cur_dim = config["mlp_hidden_dim"]
 
         modules.append(nn.Linear(cur_dim, config["embedding_dim"], bias=False))
@@ -167,18 +192,26 @@ class DecoderLayer(nn.Module):
 
         self.normalize_keys = config.get("normalize_keys", True)
         if self.normalize_keys:
-            self.register_parameter(name='attention_scale_factors', param=nn.Parameter(torch.ones(self.num_heads, )))
+            self.register_parameter(
+                name="attention_scale_factors",
+                param=nn.Parameter(
+                    torch.ones(
+                        self.num_heads,
+                    )
+                ),
+            )
 
-        self.post_attn_mlp = nn.Linear(self.embedding_dim, self.embedding_dim, bias=False)
+        self.post_attn_mlp = nn.Linear(
+            self.embedding_dim, self.embedding_dim, bias=False
+        )
         self.ffn = MLP(config)
         self.pre_ffn_layernorm = AGLayerNorm(config)
 
     def _get_causal_mask(self, num_qs, num_ks):
         qidx = torch.arange(0, num_qs).reshape(num_qs, 1)
         kidx = torch.arange(0, num_ks).reshape(1, num_ks)
-        mask = (kidx - qidx)<0
+        mask = (kidx - qidx) < 0
         return mask
-
 
     def forward(self, xs):
         batch_size, seq_length, _ = xs.shape
@@ -195,7 +228,9 @@ class DecoderLayer(nn.Module):
         attn = attn.softmax(dim=-1)
 
         ys_hidden = torch.einsum("...hqk,...khd->...qhd", attn, values)
-        ys_hidden = ys_hidden.reshape((batch_size, seq_length, self.num_heads * self.head_dim))
+        ys_hidden = ys_hidden.reshape(
+            (batch_size, seq_length, self.num_heads * self.head_dim)
+        )
         ys_hidden = self.post_attn_mlp(ys_hidden) + xs
 
         ys = self.pre_ffn_layernorm(ys_hidden)
