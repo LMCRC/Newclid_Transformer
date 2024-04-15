@@ -100,6 +100,12 @@ class AGLayerNorm(Module):
             ),
         )
 
+    def _apply(self, fn):
+        if "bfloat" in repr(fn):
+            return
+        else:
+            super()._apply(fn)
+
     def forward(self, xs):
         xln = xs.to(torch.float32)
         var = torch.mean(torch.square(xln), dim=-1, keepdims=True)
@@ -132,9 +138,9 @@ class QKVLayer(Module):
 
     def _normalize_kq(self, kq):
         epsilon = 1.0e-6
-        kq_sum_sqr = torch.sum(torch.square(kq), axis=-1, keepdims=True)
-        norm_kq = kq * torch.rsqrt(kq_sum_sqr + epsilon)
-        return norm_kq
+        kq_sum_sqr = torch.sum(torch.square(kq.float()), axis=-1, keepdims=True)
+        norm_kq = kq.float() * torch.rsqrt(kq_sum_sqr + epsilon)
+        return norm_kq.to(kq.dtype)
 
     def forward(self, xs):
         batch_size, seq_len, _ = xs.shape
