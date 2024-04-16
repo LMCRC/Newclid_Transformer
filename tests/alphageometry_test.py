@@ -11,7 +11,7 @@ def test_solver_only_should_solve_orthocenter_aux():
         "cpu",
         "-o",
         None,
-        "--problems",
+        "--problems_file",
         "problems_datasets/examples.txt",
         "--problem",
         "orthocenter_aux",
@@ -28,7 +28,7 @@ def test_solver_only_should_not_solve_orthocenter():
         "cpu",
         "-o",
         None,
-        "--problems",
+        "--problems_file",
         "problems_datasets/examples.txt",
         "--problem",
         "orthocenter",
@@ -40,7 +40,7 @@ def test_solver_only_should_not_solve_orthocenter():
 
 def test_alphageometry_should_solve_orthocenter():
     pytest.importorskip("torch")
-    check_point_path = Path(".\pt_ckpt")
+    check_point_path = Path("./pt_ckpt")
     if not check_point_path.exists():
         pytest.skip(f"No checkpoint found at {check_point_path}")
 
@@ -50,7 +50,7 @@ def test_alphageometry_should_solve_orthocenter():
         "cpu",
         "-o",
         None,
-        "--problems",
+        "--problems_file",
         "problems_datasets/examples.txt",
         "--problem",
         "orthocenter",

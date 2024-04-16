@@ -123,6 +123,11 @@ def run_alphageometry(
                 ],
                 "scores": [o[1] for o in outs],
             }
+
+            for i, string in enumerate(outputs["seqs_str"]):
+                logging.info(
+                    f"LM output {i+1}: {string} (score: {outputs['scores'][i]})"
+                )
             # outputs = model.beam_decode(string, eos_tokens=[';'])
 
             # translate lm output to the constructive language.
@@ -138,7 +143,7 @@ def run_alphageometry(
                 solver.load_state(proof_state)
                 solver.load_problem_string(pstring)
 
-                logging.info('LM output (score=%f): "%s"', score, lm_out)
+                logging.info('Trying LM output (score=%f): "%s"', score, lm_out)
 
                 aux_string = try_translate_constrained_to_construct(
                     lm_out, solver.get_existing_points(), solver.get_defs()

@@ -15,6 +15,11 @@ from geosolver import GeometricSolverBuilder
 def main() -> bool:
     args = run_cli()
 
+    if args.logging:
+        import logging
+
+        logging.basicConfig(level=logging.INFO)
+
     # when using the language model,
     # point names will be renamed to alphabetical a, b, c, d, e, ...
     # instead of staying with their original names,
@@ -29,7 +34,9 @@ def main() -> bool:
         out_folder.mkdir(parents=True, exist_ok=True)
 
     solver_builder = GeometricSolverBuilder().load_problem_from_file(
-        problems_path=args.problems, problem_name=args.problem, translate=need_rename
+        problems_path=args.problems_file,
+        problem_name=args.problem,
+        translate=need_rename,
     )
     if args.defs is not None:
         solver_builder.load_defs_from_file(args.defs)
