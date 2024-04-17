@@ -100,12 +100,6 @@ class AGLayerNorm(Module):
             ),
         )
 
-    def _apply(self, fn):
-        if "bfloat" in repr(fn):
-            return
-        else:
-            super()._apply(fn)
-
     def forward(self, xs):
         xln = xs.to(torch.float32)
         var = torch.mean(torch.square(xln), dim=-1, keepdims=True)
@@ -137,9 +131,9 @@ class QKVLayer(Module):
         self.pre_attn_layernorm = AGLayerNorm(config)
 
     def _normalize_kq(self, kq):
-        epsilon = 1.0e-6
-        kq_sum_sqr = torch.sum(torch.square(kq.float()), axis=-1, keepdims=True)
-        norm_kq = kq.float() * torch.rsqrt(kq_sum_sqr + epsilon)
+        epsilon = torch.Tensor([1.0e-6]).to(kq.dtype).to(kq.device)
+        kq_sum_sqr = torch.sum(torch.square(kq), axis=-1, keepdims=True)
+        norm_kq = kq * torch.rsqrt(kq_sum_sqr.float() + epsilon).to(kq.dtype)
         return norm_kq.to(kq.dtype)
 
     def forward(self, xs):
@@ -260,7 +254,7 @@ class DecoderLayer(Module):
         if self.normalize_keys:
             attn *= self.attention_scale_factors.reshape(1, self.num_heads, 1, 1)
         attn = torch.where(causal_mask, attn, -1_000_000.0)
-        attn = attn.softmax(dim=-1)
+        attn = attn.softmax(dim=-1) * causal_mask
 
         ys_hidden = torch.einsum("...hqk,...khd->...qhd", attn, values)
         ys_hidden = ys_hidden.reshape(
@@ -283,13 +277,25 @@ class Decoder(Module):
             [DecoderLayer(config) for _ in range(config["num_layers"])]
         )
         self.final_layernorm = AGLayerNorm(config)
+        self.dtype = self.final_layernorm.weight.dtype
+
+    def _apply(self, fn, recurse=True):
+        if recurse:
+            if "bfloat16" not in repr(fn):
+                self.embedding._apply(fn)
+            self.layers._apply(fn, recurse=recurse)
+            self.final_layernorm._apply(fn, recurse=recurse)
+
+        super()._apply(fn, recurse=False)
+        self.dtype = self.final_layernorm.weight.dtype
 
     def forward(self, xs):
         ys = self.embedding(xs)
+        ys = ys.to(self.dtype)
         for layer in self.layers:
             ys = layer(ys)
 
         ys = self.final_layernorm(ys)
-        logits = torch.nn.functional.linear(ys, self.embedding.weight)
+        logits = torch.nn.functional.linear(ys.float(), self.embedding.weight)
         logits /= math.sqrt(logits.shape[-1])
         return logits
