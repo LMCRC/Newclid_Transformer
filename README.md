@@ -264,7 +264,7 @@ INFO:root:{S} a : ; b : ; c : ; d : T a b c d 00 T a c b d 01 ? T a d b c {F1} x
 INFO:root:Decoding from {S} a : ; b : ; c : ; d : T a b c d 00 T a c b d 01 ? T a d b c {F1} x00
 INFO:root:LM output 1: e : C a c e 02 C b d e 03 ; (score: -1.6525408374450157)
 INFO:root:LM output 2: e : D a b c e 02 D a c b e 03 ; (score: -1.8277973403035555)
-INFO:root:Trying LM output (score=-2.031250): "e : C a c e 02 C b d e 03 ;"
+INFO:root:Trying LM output (score=-1.6525408374450157): "e : C a c e 02 C b d e 03 ;"
 INFO:root:Translation: "e = on_line e a c, on_line e b d"
 
 INFO:root:Solving: "a b c = triangle a b c; d = on_tline d b a c, on_tline d c a b; e = on_line e a c, on_line e b d ? perp a d b c"
