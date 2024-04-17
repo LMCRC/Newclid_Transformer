@@ -262,8 +262,8 @@ INFO:root:Solver failed to solve the problem.
 INFO:root:Depth 0. There are 1 nodes to expand:
 INFO:root:{S} a : ; b : ; c : ; d : T a b c d 00 T a c b d 01 ? T a d b c {F1} x00
 INFO:root:Decoding from {S} a : ; b : ; c : ; d : T a b c d 00 T a c b d 01 ? T a d b c {F1} x00
-INFO:root:LM output 1: e : C a c e 02 C b d e 03 ; (score: -2.03125)
-INFO:root:LM output 2: e : C a b e 02 C c d e 03 ; (score: -2.953125)
+INFO:root:LM output 1: e : C a c e 02 C b d e 03 ; (score: -1.6525408374450157)
+INFO:root:LM output 2: e : D a b c e 02 D a c b e 03 ; (score: -1.8277973403035555)
 INFO:root:Trying LM output (score=-2.031250): "e : C a c e 02 C b d e 03 ;"
 INFO:root:Translation: "e = on_line e a c, on_line e b d"
 
@@ -314,13 +314,12 @@ abstractions in favor of "code clarity".
 
 As can be seen in the output, initially DDAR failed to solve the problem.
 The LM proposes two auxiliary constructions (because of default parameter `--batch_size=2`):\
-`e : C a c e 02 C b d e 03 ; (score: -2.03125)`\
-`e : C a b e 02 C c d e 03 ; (score: -2.953125)`
-
+`e : C a c e 02 C b d e 03 ; (score: -1.6525408374450157)`
+`e : D a b c e 02 D a c b e 03 ; (score: -1.8277973403035555)`
 
 * `e = on_line e a c, on_line e b d`, i.e.,
 `E` is the intersection of `AC` and `BD`.
-This construction has the highest score (`-2.031250`) of the generated solution, and is explored first..
+This construction has the highest score (`-1.6525...`) of the generated solution, and is explored first..
 
 DDAR re-runs with the proposed auxiliary construction, and finds the solution right away.
 The proof search therefore terminates and there is no second iteration.

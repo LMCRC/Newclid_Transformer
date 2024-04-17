@@ -8,6 +8,45 @@ except ImportError:
     LongTensor = raise_if_instanciated("torch")
 
 
+def brevity_penalty(length, alpha=0.6, numerator_bias=5, denominator_bias=6):
+    return pow((length + numerator_bias) / denominator_bias, alpha)
+
+
+def priority_beam_search(model, inp, beam_width=4, num_return_sequences=2, eos_id=263):
+    live_sequences = [(inp, 0.0)]
+    finished_sequences = []
+    start_len = inp.shape[-1]
+
+    while live_sequences:
+        cur_inp, cur_score = live_sequences.pop()
+
+        if (
+            finished_sequences
+            and len(finished_sequences) >= num_return_sequences
+            and cur_score < finished_sequences[-1][1]
+        ):
+            break
+
+        log_p = model(cur_inp)[:, -1].log_softmax(dim=-1)
+        values, indices = log_p.topk(beam_width)
+
+        penalty = brevity_penalty(cur_inp.shape[-1] + 1 - start_len)
+
+        for val, idx in zip(values.T, indices.T):
+            new_inp = cat([cur_inp, idx.unsqueeze(0)], dim=-1)
+            new_score = (cur_score) + val.item() / penalty
+
+            if idx == eos_id:
+                finished_sequences.append((new_inp.flatten().tolist(), new_score))
+                finished_sequences.sort(key=lambda x: x[1], reverse=True)
+                finished_sequences = finished_sequences[:num_return_sequences]
+            else:
+                live_sequences.append((new_inp, new_score))
+                live_sequences.sort(key=lambda x: x[1])
+
+    return finished_sequences
+
+
 def simple_beam_search(
     model, inp, beam_width=4, num_return_sequences=2, eos_idx=263, max_tokens=128
 ):

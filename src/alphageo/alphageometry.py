@@ -29,7 +29,7 @@ import os
 
 from alphageo.model import Decoder
 from alphageo.translate import try_translate_constrained_to_construct
-from alphageo.inference import simple_beam_search
+from alphageo.inference import priority_beam_search as beam_search
 from alphageo.optional_imports import raise_if_called, raise_if_instanciated
 
 try:
@@ -111,7 +111,7 @@ def run_alphageometry(
             logging.info("Decoding from %s", string)
             tokens = tokenizer.encode(string)
             inp = LongTensor([tokens]).to(device)
-            outs = simple_beam_search(
+            outs = beam_search(
                 model,
                 inp,
                 beam_width=model_beam_width,
