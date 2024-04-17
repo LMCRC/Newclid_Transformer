@@ -47,12 +47,14 @@ def run_cli() -> Namespace:
     parser.add_argument(
         "--lm-beam-width",
         "-B",
+        type=int,
         default=4,
         help="Beam width for the LM decoder.",
     )
     parser.add_argument(
         "--batch-size",
         "-K",
+        type=int,
         default=2,
         help="Number of sequences LM decoder returns for each input",
     )
@@ -70,11 +72,13 @@ def run_cli() -> Namespace:
     parser.add_argument(
         "--search-width",
         "-W",
+        type=int,
         default=2,
         help="Beam width of the proof search across LM sugestions.",
     )
     parser.add_argument(
         "--search-depth",
+        type=int,
         default=2,
         help="Depth of the proof search across LM sugestions.",
     )
