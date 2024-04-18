@@ -6,7 +6,7 @@ DEFAULT_OUTPUT = "#Default"
 def run_cli() -> Namespace:
     parser = ArgumentParser("alphageo", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        "--problems_file",
+        "--problems-file",
         default="problems_datasets/examples.txt",
         type=str,
         help="Path to the text file contains the problem strings.",
