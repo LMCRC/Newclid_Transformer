@@ -186,6 +186,9 @@ def try_translate_constrained_to_construct(
     if string[-1] != ";":
         return "ERROR: must end with ;"
 
+    if " : " not in string:
+        return "ERROR: must contain :"
+
     head, prem_str = string.split(" : ")
     point = head.strip()
 
@@ -212,7 +215,10 @@ def try_translate_constrained_to_construct(
     constructions = []
 
     for prem in prems:
-        name, *args = prem
+        try:
+            name, *args = prem
+        except ValueError:
+            return f"ERROR: {prem} with invalid args."
 
         if point not in args:
             return f"ERROR: {point} not found in predicate args."
