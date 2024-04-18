@@ -81,6 +81,8 @@ def run_alphageometry(
         if out_folder is not None:
             solver.write_solution(out_folder / "proof_steps.txt")
             solver.draw_figure(out_folder / "proof_figure.png")
+        else:
+            solver.write_solution(out_folder)
         return True
 
     # translate the problem to a string of grammar that the LM is trained on.
@@ -124,9 +126,9 @@ def run_alphageometry(
                 "scores": [o[1] for o in outs],
             }
 
-            for i, string in enumerate(outputs["seqs_str"]):
+            for i, out_string in enumerate(outputs["seqs_str"]):
                 logging.info(
-                    f"LM output {i+1}: {string} (score: {outputs['scores'][i]})"
+                    f"LM output {i+1}: {out_string} (score: {outputs['scores'][i]})"
                 )
             # outputs = model.beam_decode(string, eos_tokens=[';'])
 
@@ -162,6 +164,8 @@ def run_alphageometry(
                     if out_folder is not None:
                         solver.write_solution(out_folder / "proof_steps.txt")
                         solver.draw_figure(out_folder / "proof_figure.png")
+                    else:
+                        solver.write_solution(out_folder)
                     return True
 
                 # Add the candidate to the beam queue.
