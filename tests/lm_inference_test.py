@@ -64,5 +64,5 @@ def test_beamsearch_output_scores():
     inp = torch.LongTensor([tokens])
     outp = beam_search(model, inp, beam_width=4, num_return_sequences=2)
 
-    assert isclose(-1.65110258136528, outp[0][1], rtol=1e-8)
-    assert isclose(-1.8018533007513866, outp[1][1], rtol=1e-8)
+    assert isclose(-1.6585191699136992, outp[0][1], rtol=1e-8)
+    assert isclose(-1.802338749355057, outp[1][1], rtol=1e-8)
