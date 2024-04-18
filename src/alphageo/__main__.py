@@ -57,7 +57,7 @@ def main() -> bool:
                 solver.write_solution(out_folder / "proof_steps.txt")
                 solver.draw_figure(out_folder / "proof_figure.png")
             else:
-                solver.write_solution(out_folder / "proof_steps.txt")
+                solver.write_solution(out_folder)
         return success
 
     torch.requires_grad = False
