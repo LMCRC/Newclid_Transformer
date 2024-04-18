@@ -70,11 +70,13 @@ def run_cli() -> Namespace:
     parser.add_argument(
         "--search-width",
         "-W",
+        type=int,
         default=1,
         help="Beam width of the proof search across LM sugestions.",
     )
     parser.add_argument(
         "--search-depth",
+        type=int,
         default=1,
         help="Depth of the proof search across LM sugestions.",
     )
