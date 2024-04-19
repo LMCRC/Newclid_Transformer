@@ -94,8 +94,8 @@ pip install -e .[download,torch,geosolver]
 ```
 
 `download` installs boto3, which is needed to download model weights and vocabulary files.\
-`torch` installs pyTorch 2.2.2 .\
-`geosolver` installs the internal geosolver v1.1.0 from `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.0?ref_type=tags`.\
+`torch` installs pyTorch, which is the framework for our LM .\
+`geosolver` installs the internal geosolver v1.1.1 from `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.1?ref_type=tags`.
 
 If you are participating in active development, you can install recommended dev features with the `[dev]` tag.
 
@@ -109,9 +109,9 @@ python common_folder_downloader.py --region cn-southwest-2 --app_token 82aaeb97-
 
 ### Manually -- docker
 
-To install alphageo as a docker image, first manually clone the `geosolver v1.1.0` dependency:
+To install alphageo as a docker image, first manually clone the `geosolver v1.1.1` dependency:
 ```shell
-git clone --single-branch --branch v1.1.0 https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git
+git clone --single-branch --branch v1.1.1 https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git
 ```
 
 Then clean-build the docker:
