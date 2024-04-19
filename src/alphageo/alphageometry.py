@@ -29,7 +29,7 @@ import os
 
 from alphageo.model import Decoder
 from alphageo.translate import try_translate_constrained_to_construct
-from alphageo.inference import simple_beam_search
+from alphageo.inference import priority_beam_search as beam_search
 from alphageo.optional_imports import raise_if_called, raise_if_instanciated
 
 try:
@@ -81,6 +81,8 @@ def run_alphageometry(
         if out_folder is not None:
             solver.write_solution(out_folder / "proof_steps.txt")
             solver.draw_figure(out_folder / "proof_figure.png")
+        else:
+            solver.write_solution(out_folder)
         return True
 
     # translate the problem to a string of grammar that the LM is trained on.
@@ -111,7 +113,7 @@ def run_alphageometry(
             logging.info("Decoding from %s", string)
             tokens = tokenizer.encode(string)
             inp = LongTensor([tokens]).to(device)
-            outs = simple_beam_search(
+            outs = beam_search(
                 model,
                 inp,
                 beam_width=model_beam_width,
@@ -123,6 +125,11 @@ def run_alphageometry(
                 ],
                 "scores": [o[1] for o in outs],
             }
+
+            for i, out_string in enumerate(outputs["seqs_str"]):
+                logging.info(
+                    f"LM output {i+1}: {out_string} (score: {outputs['scores'][i]})"
+                )
             # outputs = model.beam_decode(string, eos_tokens=[';'])
 
             # translate lm output to the constructive language.
@@ -138,7 +145,7 @@ def run_alphageometry(
                 solver.load_state(proof_state)
                 solver.load_problem_string(pstring)
 
-                logging.info('LM output (score=%f): "%s"', score, lm_out)
+                logging.info('Trying LM output (score=%f): "%s"', score, lm_out)
 
                 aux_string = try_translate_constrained_to_construct(
                     lm_out, solver.get_existing_points(), solver.get_defs()
@@ -157,6 +164,8 @@ def run_alphageometry(
                     if out_folder is not None:
                         solver.write_solution(out_folder / "proof_steps.txt")
                         solver.draw_figure(out_folder / "proof_figure.png")
+                    else:
+                        solver.write_solution(out_folder)
                     return True
 
                 # Add the candidate to the beam queue.

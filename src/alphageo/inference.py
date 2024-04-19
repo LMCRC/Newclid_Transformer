@@ -3,9 +3,72 @@ from alphageo.optional_imports import raise_if_called, raise_if_instanciated
 
 try:
     from torch import cat, LongTensor
+    from torch.nn.functional import pad
 except ImportError:
     cat = raise_if_called("torch")
     LongTensor = raise_if_instanciated("torch")
+    pad = raise_if_called("pad")
+
+
+def decode(model, inp):
+    return model(inp).log_softmax(dim=-1)
+
+
+def brevity_penalty(length, alpha=0.6, numerator_bias=5, denominator_bias=6):
+    return pow((length + numerator_bias) / denominator_bias, alpha)
+
+
+def priority_beam_search(model, inp, beam_width=4, num_return_sequences=2, eos_id=263):
+    live_sequences = [(inp, 0.0)]
+    finished_sequences = []
+    start_len = inp.shape[-1]
+    batch_size = beam_width
+
+    while live_sequences:
+        cur_batch = live_sequences[:batch_size]
+        live_sequences = live_sequences[batch_size:]
+
+        if (
+            finished_sequences
+            and len(finished_sequences) >= num_return_sequences
+            and cur_batch[0][1] < finished_sequences[-1][1]
+        ):
+            break
+
+        batch_lens = [item[0].shape[-1] for item in cur_batch]
+        max_len = max(batch_lens)
+
+        batch_inp = cat(
+            [pad(item[0], (0, max_len - item[0].shape[-1])) for item in cur_batch]
+        )
+
+        batch_log_p = model(batch_inp).log_softmax(dim=-1)
+
+        for b_idx, (log_p, length) in enumerate(zip(batch_log_p, batch_lens)):
+            cur_inp, cur_score = cur_batch[b_idx]
+
+            values, indices = log_p[length - 1].topk(beam_width)
+            penalty = brevity_penalty(length + 1 - start_len)
+
+            for val, idx in zip(values, indices):
+                new_inp = cat([cur_inp, idx.view(1, 1)], dim=-1)
+                new_score = (cur_score) + val.item() / penalty
+
+                good_score = (
+                    len(finished_sequences) < num_return_sequences
+                    or new_score > finished_sequences[-1][1]
+                )
+
+                if idx == eos_id and good_score:
+                    new_seq = new_inp.flatten().tolist()
+                    finished_sequences.append((new_seq, new_score))
+                    finished_sequences.sort(key=lambda x: x[1], reverse=True)
+                    finished_sequences = finished_sequences[:num_return_sequences]
+                elif good_score:
+                    live_sequences.append((new_inp, new_score))
+                    live_sequences.sort(key=lambda x: x[1], reverse=True)
+
+    return finished_sequences
 
 
 def simple_beam_search(

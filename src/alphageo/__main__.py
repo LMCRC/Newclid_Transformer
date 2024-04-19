@@ -10,10 +10,18 @@ except ImportError:
 
 
 from geosolver import GeometricSolverBuilder
+import sys
 
 
 def main() -> bool:
+    sys.setrecursionlimit(2000)
+
     args = run_cli()
+
+    if args.logging:
+        import logging
+
+        logging.basicConfig(level=logging.INFO)
 
     # when using the language model,
     # point names will be renamed to alphabetical a, b, c, d, e, ...
@@ -25,11 +33,16 @@ def main() -> bool:
     if out_folder == DEFAULT_OUTPUT:
         out_folder = f"results/{args.problem}"
     if out_folder is not None:
-        out_folder = Path(out_folder)
-        out_folder.mkdir(parents=True, exist_ok=True)
+        if out_folder == "None":
+            out_folder = None
+        else:
+            out_folder = Path(out_folder)
+            out_folder.mkdir(parents=True, exist_ok=True)
 
     solver_builder = GeometricSolverBuilder().load_problem_from_file(
-        problems_path=args.problems, problem_name=args.problem, translate=need_rename
+        problems_path=args.problems_file,
+        problem_name=args.problem,
+        translate=need_rename,
     )
     if args.defs is not None:
         solver_builder.load_defs_from_file(args.defs)
@@ -39,9 +52,12 @@ def main() -> bool:
 
     if args.solver_only:
         success = solver.run()
-        if success and out_folder is not None:
-            solver.write_solution(out_folder / "proof_steps.txt")
-            solver.draw_figure(out_folder / "proof_figure.png")
+        if success:
+            if out_folder is not None:
+                solver.write_solution(out_folder / "proof_steps.txt")
+                solver.draw_figure(out_folder / "proof_figure.png")
+            else:
+                solver.write_solution(out_folder)
         return success
 
     torch.requires_grad = False

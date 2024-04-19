@@ -23,8 +23,9 @@ classifiers=[
 
 [project.optional-dependencies]
 dev = ['ruff', 'pytest', 'pytest-cov', 'pytest-check', 'pytest-mock', 'pre-commit']
-torch = ['torch>2']
-download = ['boto3>=1.0.0']
+torch = ['torch==2.2.2']
+download = ['boto3==1.33.13']
+geosolver = ['geosolver @ git+https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git@v1.1.0#egg=geosolver']
 
 [tool.setuptools]
 license-files = ['LICEN[CS]E*', 'COPYING*', 'NOTICE*', 'AUTHORS*']

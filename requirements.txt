@@ -2,7 +2,4 @@ numpy
 scipy
 matplotlib
 typing-extensions
-sentencepiece>=0.1.99
-
-# Internal dependency, install must be done through ssh (manually) or with access token (CI)
-geosolver @ git+https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git@v1.1.0#egg=geosolver
+sentencepiece==0.1.99

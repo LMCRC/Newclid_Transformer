@@ -1,12 +1,12 @@
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 
 DEFAULT_OUTPUT = "#Default"
 
 
 def run_cli() -> Namespace:
-    parser = ArgumentParser("alphageo")
+    parser = ArgumentParser("alphageo", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        "--problems",
+        "--problems-file",
         default="problems_datasets/examples.txt",
         type=str,
         help="Path to the text file contains the problem strings.",
@@ -47,6 +47,7 @@ def run_cli() -> Namespace:
     parser.add_argument(
         "--lm-beam-width",
         "-B",
+        type=int,
         default=4,
         help="Beam width for the LM decoder.",
     )
@@ -72,14 +73,19 @@ def run_cli() -> Namespace:
         "--search-width",
         "-W",
         type=int,
-        default=1,
+        default=2,
         help="Beam width of the proof search across LM sugestions.",
     )
     parser.add_argument(
         "--search-depth",
         type=int,
-        default=1,
+        default=2,
         help="Depth of the proof search across LM sugestions.",
+    )
+    parser.add_argument(
+        "--logging",
+        action="store_true",
+        help="If set, logs to stdout.",
     )
     args, _ = parser.parse_known_args()
     return args
