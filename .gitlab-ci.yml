@@ -14,6 +14,7 @@ cache:
   paths:
     - .cache/pip
     - venv/
+    - pt_ckpt/
 
 before_script:
   - python --version
@@ -33,10 +34,11 @@ build:
     # redirect of the Huawei mirror for pip
     - pip config set global.index-url "http://mirrors.tools.huawei.com/pypi/simple"
     - pip config set global.trusted-host "mirrors.tools.huawei.com rnd-gitlab-eu.huawei.com pypi.org files.pythonhosted.org"
-    # upgrade pip
+    # install package with pip
     - pip install --upgrade pip
-    #- pip install --use-feature=in-tree-build -e .[dev] 
-    - pip install -e .[dev]
+    - pip install -e .[download,torch,geosolver]
+    # download weights
+    - python common_folder_downloader.py --region cn-southwest-2 --app_token 82aaeb97-6bbb-4a9a-a164-07268a0a6d0b --bucket_name bucket-pangu-green-guiyang --path philipjg/pt_ckpt/
 
 pytest-coverage:
     stage: test
