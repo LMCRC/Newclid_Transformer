@@ -75,8 +75,8 @@ elif [ "$VENV" == "conda" ]; then
     source ~/miniconda3/bin/activate ag
 elif [ "$VENV" == "docker" ]; then
     git clone --single-branch --branch v1.1.1 https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git
-    docker build --no-cache . -t registry-cbu.huawei.com/ukrc-k8s/alphageometry_pt:latest
-    docker run --name alphageo --gpus="all" -ti --rm --mount type=bind,src=.,target=/ag/ --entrypoint python registry-cbu.huawei.com/ukrc-k8s/alphageometry_pt:latest \
+    docker build --no-cache . -t alphageometry_pt:latest
+    docker run --name alphageo --gpus="all" -ti --rm --mount type=bind,src=.,target=/ag/ --entrypoint python alphageometry_pt:latest \
         common_folder_downloader.py --region cn-southwest-2 --app_token 82aaeb97-6bbb-4a9a-a164-07268a0a6d0b --bucket_name bucket-pangu-green-guiyang --path philipjg/pt_ckpt/
     rm -rf ./geosolver/
     mkdir results
