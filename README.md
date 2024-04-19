@@ -36,10 +36,10 @@ boto3==1.33.13
 ```
 Later versions may work, but are untested.
 
-Our code depends on `geosolver v1.1.0`, which is another internal package
+Our code depends on `geosolver>=v1.1.1`, which is another internal package
 and not registered with `pip`/pypi.
 
-Geosolver v1.1.0 is available at `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.0?ref_type=tags` .
+Geosolver v1.1.1 is available at `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.1?ref_type=tags` .
 
 This will automatically be installed with the `setup.sh` installation script, or by using
 the `[geosolver]` option when installing manually.
@@ -66,6 +66,10 @@ bash ./setup.sh --conda
 INSTALL WITH DOCKER
 bash ./setup.sh --docker
 ```
+
+This will install all required packages, including `geosolver`, and download the LM weights and the tokenizer vocabulary.
+
+If you are using the script to re-install over a previous installation, you can also pass the `--no-download` option to prevent it from downloading model weights and the tokenizer again.
 
 ### Manually -- virtualenv/conda
 
