@@ -149,7 +149,7 @@ alphageo --problems_file [...]
 To run alphageo with docker (if build above), make sure you bind the local `problems_datasets`, `pt_ckpt` and `results` folders.\
 `alphageo` is already set as the docker's entrypoint, so just pass your parameters to the run command:
 ```bash
-docker run --name alphageo --gpus="all" -ti --rm --mount type=bind,src="./pt_ckpt/",target=/ag/pt_ckpt/ --mount type=bind,src="./problems_datasets/",target=/ag/problems_datasets/ --mount type=bind,src="./results/",target=/ag/results/ --problems_file [...]
+docker run --name alphageo --gpus="all" -ti --rm --mount type=bind,src="./pt_ckpt/",target=/ag/pt_ckpt/ --mount type=bind,src="./problems_datasets/",target=/ag/problems_datasets/ --mount type=bind,src="./results/",target=/ag/results/ alphageometry_pt:latest --problems_file [...]
 ```
 
 In the examples below, we assume `alphageo` is run from a virutalenv or conda environment.
