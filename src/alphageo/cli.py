@@ -53,6 +53,7 @@ def run_cli() -> Namespace:
     parser.add_argument(
         "--batch-size",
         "-K",
+        type=int,
         default=2,
         help="Number of sequences LM decoder returns for each input",
     )
