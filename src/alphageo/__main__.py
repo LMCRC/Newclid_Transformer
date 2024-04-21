@@ -10,11 +10,10 @@ except ImportError:
 
 
 from geosolver import GeometricSolverBuilder
-import sys
 
 
 def main() -> bool:
-    sys.setrecursionlimit(2000)
+    # sys.setrecursionlimit(2000)
 
     args = run_cli()
 
