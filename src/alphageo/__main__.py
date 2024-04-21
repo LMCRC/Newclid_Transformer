@@ -13,8 +13,6 @@ from geosolver import GeometricSolverBuilder
 
 
 def main() -> bool:
-    # sys.setrecursionlimit(2000)
-
     args = run_cli()
 
     if args.logging:
