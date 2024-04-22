@@ -281,7 +281,11 @@ class Decoder(Module):
 
     def _apply(self, fn, recurse=True):
         if recurse:
-            if "bfloat16" not in repr(fn):
+            rep = repr(fn)
+            is_dtype = any(
+                [typ in rep for typ in ["float", "double", "half", "int", "long"]]
+            )
+            if not is_dtype:
                 self.embedding._apply(fn)
             self.layers._apply(fn, recurse=recurse)
             self.final_layernorm._apply(fn, recurse=recurse)
