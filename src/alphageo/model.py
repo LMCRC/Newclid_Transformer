@@ -472,7 +472,7 @@ class Decoder(Module):
             xs: LongTensor of shape `(batch_size, sequence_length)`.
 
         Returns:
-            FloatTensor of shape `(batch_size, sequence_length, embedding_dim)`.
+            FloatTensor of shape `(batch_size, sequence_length)`.
         """
         ys = self.embedding(xs)
         ys = ys.to(self.dtype)
