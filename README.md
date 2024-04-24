@@ -36,10 +36,10 @@ boto3==1.33.13
 ```
 Later versions may work, but are untested.
 
-Our code depends on `geosolver v1.1.0`, which is another internal package
+Our code depends on `geosolver>=v1.1.1`, which is another internal package
 and not registered with `pip`/pypi.
 
-Geosolver v1.1.0 is available at `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.0?ref_type=tags` .
+Geosolver v1.1.1 is available at `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.1?ref_type=tags` .
 
 This will automatically be installed with the `setup.sh` installation script, or by using
 the `[geosolver]` option when installing manually.
@@ -67,6 +67,10 @@ INSTALL WITH DOCKER
 bash ./setup.sh --docker
 ```
 
+This will install all required packages, including `geosolver`, and download the LM weights and the tokenizer vocabulary.
+
+If you are using the script to re-install over a previous installation, you can also pass the `--no-download` option to prevent it from downloading model weights and the tokenizer again.
+
 ### Manually -- virtualenv/conda
 
 Installation is done in a virtual environment.
@@ -90,8 +94,8 @@ pip install -e .[download,torch,geosolver]
 ```
 
 `download` installs boto3, which is needed to download model weights and vocabulary files.\
-`torch` installs pyTorch 2.2.2 .\
-`geosolver` installs the internal geosolver v1.1.0 from `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.0?ref_type=tags`.\
+`torch` installs pyTorch, which is the framework for our LM .\
+`geosolver` installs the internal geosolver v1.1.1 from `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.1?ref_type=tags`.
 
 If you are participating in active development, you can install recommended dev features with the `[dev]` tag.
 
@@ -105,9 +109,9 @@ python common_folder_downloader.py --region cn-southwest-2 --app_token 82aaeb97-
 
 ### Manually -- docker
 
-To install alphageo as a docker image, first manually clone the `geosolver v1.1.0` dependency:
+To install alphageo as a docker image, first manually clone the `geosolver v1.1.1` dependency:
 ```shell
-git clone --single-branch --branch v1.1.0 https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git
+git clone --single-branch --branch v1.1.1 https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git
 ```
 
 Then clean-build the docker:
@@ -145,7 +149,7 @@ alphageo --problems_file [...]
 To run alphageo with docker (if build above), make sure you bind the local `problems_datasets`, `pt_ckpt` and `results` folders.\
 `alphageo` is already set as the docker's entrypoint, so just pass your parameters to the run command:
 ```bash
-docker run --name alphageo --gpus="all" -ti --rm --mount type=bind,src="./pt_ckpt/",target=/ag/pt_ckpt/ --mount type=bind,src="./problems_datasets/",target=/ag/problems_datasets/ --mount type=bind,src="./results/",target=/ag/results/ --problems_file [...]
+docker run --name alphageo --gpus="all" -ti --rm --mount type=bind,src="./pt_ckpt/",target=/ag/pt_ckpt/ --mount type=bind,src="./problems_datasets/",target=/ag/problems_datasets/ --mount type=bind,src="./results/",target=/ag/results/ alphageometry_pt:latest --problems_file [...]
 ```
 
 In the examples below, we assume `alphageo` is run from a virutalenv or conda environment.

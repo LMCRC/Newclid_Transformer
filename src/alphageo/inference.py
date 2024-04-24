@@ -18,7 +18,9 @@ def brevity_penalty(length, alpha=0.6, numerator_bias=5, denominator_bias=6):
     return pow((length + numerator_bias) / denominator_bias, alpha)
 
 
-def priority_beam_search(model, inp, beam_width=4, num_return_sequences=2, eos_id=263):
+def priority_beam_search(
+    model, inp, beam_width=4, num_return_sequences=2, eos_id=263, max_new_tokens=512
+):
     live_sequences = [(inp, 0.0)]
     finished_sequences = []
     start_len = inp.shape[-1]
@@ -65,8 +67,9 @@ def priority_beam_search(model, inp, beam_width=4, num_return_sequences=2, eos_i
                     finished_sequences.sort(key=lambda x: x[1], reverse=True)
                     finished_sequences = finished_sequences[:num_return_sequences]
                 elif good_score:
-                    live_sequences.append((new_inp, new_score))
-                    live_sequences.sort(key=lambda x: x[1], reverse=True)
+                    if new_inp.shape[-1] - start_len < max_new_tokens:
+                        live_sequences.append((new_inp, new_score))
+                        live_sequences.sort(key=lambda x: x[1], reverse=True)
 
     return finished_sequences
 
