@@ -75,7 +75,7 @@ def run_alphageometry(
       boolean of whether this is solved.
     """
     # First we run the symbolic engine DD+AR:
-
+    stats = {}
     success = solver.run()
     if success:
         if out_folder is not None:
@@ -83,6 +83,7 @@ def run_alphageometry(
             solver.draw_figure(out_folder / "proof_figure.png")
         else:
             solver.write_solution(out_folder)
+        stats.update(solver.run_infos)
         return True
 
     # translate the problem to a string of grammar that the LM is trained on.
@@ -166,6 +167,7 @@ def run_alphageometry(
                         solver.draw_figure(out_folder / "proof_figure.png")
                     else:
                         solver.write_solution(out_folder)
+                    stats.update(solver.run_infos)
                     return True
 
                 # Add the candidate to the beam queue.
