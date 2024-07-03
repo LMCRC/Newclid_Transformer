@@ -8,7 +8,7 @@ RUN apt-get install -y python3 pip python-is-python3 git
 RUN pip install --upgrade pip
 
 WORKDIR /ag/geosolver
-RUN pip install -e .
+RUN pip install .
 
 WORKDIR /ag
 RUN pip install -e .[torch,download]

@@ -18,6 +18,12 @@ def run_cli() -> Namespace:
         help="text file contains the problem strings. See imo_ag_30.txt for example.",
     )
     parser.add_argument(
+        "--exp",
+        default="exp",
+        type=str,
+        help="experiment name, including dataset, modules, version",
+    )
+    parser.add_argument(
         "--defs",
         default=None,
         help="Path to definitions of available constructions to state a problem."

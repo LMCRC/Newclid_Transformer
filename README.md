@@ -166,7 +166,7 @@ Below we show this solver solving IMO 2000 P1:
 
 ```shell
 alphageo \
-  --problems_file problems_datasets/imo_ag_30.txt \
+  --problems-file problems_datasets/imo_ag_30.txt \
   --problem translated_imo_2000_p1 \
   --solver-only \
   --logging
@@ -250,7 +250,7 @@ parameters and their default values.
 
 ```shell
 alphageo \
---problems_file problems_datasets/examples.txt \
+--problems-file problems_datasets/examples.txt \
 --problem orthocenter \
 --logging
 ```
