@@ -1,0 +1,6 @@
+translated_imo_1975_p3_perp
+a b c = triangle a b c; p = s_angle c b p 45, s_angle b c p 150; q = s_angle a c q 30, s_angle c a q 135; r = s_angle b a r 15, s_angle a b r 165 ? perp q r r p
+translated_imo_1975_p3_cong
+a b c = triangle a b c; p = s_angle c b p 45, s_angle b c p 150; q = s_angle a c q 30, s_angle c a q 135; r = s_angle b a r 15, s_angle a b r 165 ? cong q r r p
+obm_1fase_2001_p9
+a b = segment a b; c = s_angle a b c 108, eqdistance c b b a; d = s_angle b c d 108, eqdistance d c c b; e = s_angle c d e 108, eqdistance e d d c; f = eqdistance f a a b, eqdistance f b a b ? aconst c d f c 7pi/30
