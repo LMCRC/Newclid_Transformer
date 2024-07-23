@@ -4,4 +4,4 @@ matplotlib
 typing-extensions
 sentencepiece
 torch==2.2.2
--e git+https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git@neo#egg=geosolver
+# -e git+https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git@neo#egg=geosolver

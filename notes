@@ -1,1 +1,5 @@
 pytest --log-cli-level=INFO --log-file log_2018_p1.txt -k test_imo_2018_p1 tests\alphageometry_test.py
+alphageo --device cpu -o p5 --problems-file problems_datasets/examples.txt --problem translated_imo_2018_p1 --search-width 5 --search-depth 2 --batch-size 5 --lm-beam-width 5
+alphageo --device cpu -o p15 --problems-file problems_datasets/examples.txt --problem translated_imo_2018_p1 --search-width 15 --search-depth 2 --batch-size 15 --lm-beam-width 15
+alphageo --device cpu -o p55 --problems-file problems_datasets/examples.txt --problem translated_imo_2018_p1 --search-width 55 --search-depth 2 --batch-size 32 --lm-beam-width 32
+alphageo --device cpu -o p512 --problems-file problems_datasets/examples.txt --problem translated_imo_2018_p1 --search-width 512 --search-depth 16 --batch-size 32 --lm-beam-width 32
