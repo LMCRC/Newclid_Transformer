@@ -4,7 +4,10 @@ import pytest
 from alphageo.__main__ import main
 
 
-def test_solver_only_should_solve_orthocenter_aux():
+def test_solve_orthocenter_aux():
+    check_point_path = Path("./pt_ckpt")
+    if not check_point_path.exists():
+        pytest.skip(f"No checkpoint found at {check_point_path}")
     sys.argv = [
         "alphageo",
         "--device",
@@ -15,31 +18,14 @@ def test_solver_only_should_solve_orthocenter_aux():
         "problems_datasets/examples.txt",
         "--problem",
         "orthocenter_aux",
-        "--solver-only",
+        "--rules",
+        "rule_sets/triangles.txt"
     ]
     success = main()
     assert success
 
 
-def test_solver_only_should_not_solve_orthocenter():
-    sys.argv = [
-        "alphageo",
-        "--device",
-        "cpu",
-        "-o",
-        None,
-        "--problems-file",
-        "problems_datasets/examples.txt",
-        "--problem",
-        "orthocenter",
-        "--solver-only",
-    ]
-    success = main()
-    assert not success
-
-
 def test_alphageometry_should_solve_orthocenter():
-    pytest.importorskip("torch")
     check_point_path = Path("./pt_ckpt")
     if not check_point_path.exists():
         pytest.skip(f"No checkpoint found at {check_point_path}")
@@ -54,6 +40,64 @@ def test_alphageometry_should_solve_orthocenter():
         "problems_datasets/examples.txt",
         "--problem",
         "orthocenter",
+        "--rules",
+        "rule_sets/triangles.txt"
+    ]
+    success = main()
+    assert success
+
+
+def test_imo_2018_p1():
+    check_point_path = Path("./pt_ckpt")
+    if not check_point_path.exists():
+        pytest.skip(f"No checkpoint found at {check_point_path}")
+
+    sys.argv = [
+        "alphageo",
+        "--device",
+        "cpu",
+        "-o",
+        None,
+        "--problems-file",
+        "problems_datasets/examples.txt",
+        "--problem",
+        "translated_imo_2018_p1",
+        "--search-width",
+        "5",
+        "--search-depth",
+        "2",
+        "--batch-size",
+        "5",
+        "--lm-beam-width",
+        "5"
+    ]
+    success = main()
+    assert success
+
+
+def test_imo_2012_p5():
+    check_point_path = Path("./pt_ckpt")
+    if not check_point_path.exists():
+        pytest.skip(f"No checkpoint found at {check_point_path}")
+
+    sys.argv = [
+        "alphageo",
+        "--device",
+        "cpu",
+        "-o",
+        None,
+        "--problems-file",
+        "problems_datasets/examples.txt",
+        "--problem",
+        "translated_imo_2018_p1",
+        "--search-width",
+        "5",
+        "--search-depth",
+        "2",
+        "--batch-size",
+        "5",
+        "--lm-beam-width",
+        "5"
     ]
     success = main()
     assert success

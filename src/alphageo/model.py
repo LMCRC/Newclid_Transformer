@@ -1,28 +1,16 @@
-from alphageo.optional_imports import raise_if_instanciated
-
-
-try:
-    import torch
-    from torch.nn import (
-        Module,
-        ModuleList,
-        Embedding,
-        Parameter,
-        Dropout,
-        Linear,
-        Sequential,
-        ReLU,
-    )
-except ImportError:
-    torch = object()
-    Module = raise_if_instanciated("torch")
-    ModuleList = raise_if_instanciated("torch")
-    Embedding = raise_if_instanciated("torch")
-    Parameter = raise_if_instanciated("torch")
-    Dropout = raise_if_instanciated("torch")
-    Linear = raise_if_instanciated("torch")
-    Sequential = raise_if_instanciated("torch")
-    ReLU = raise_if_instanciated("torch")
+from typing import Any, Callable
+import torch
+from torch import Tensor
+from torch.nn import (
+    Module,
+    ModuleList,
+    Embedding,
+    Parameter,
+    Dropout,
+    Linear,
+    Sequential,
+    ReLU,
+)
 
 import math
 
@@ -42,14 +30,14 @@ class T5RelativeEmbeddings(Module):
         num_heads: Number of heads in the attention layer. Each head will get a different relative position weighting.
     """
 
-    def __init__(self, config):
-        super().__init__()
-        self.num_buckets = config["t5_num_buckets"]
+    def __init__(self, config : dict[str, Any]):
+        super().__init__() # type: ignore
+        self.num_buckets : int = config["t5_num_buckets"]
         self.max_distance = config["t5_max_distance"]
-        self.num_heads = config["num_heads"]
+        self.num_heads : int = config["num_heads"]
         self.relative_attention_bias = Embedding(self.num_buckets, self.num_heads)
 
-    def _relative_position_bucket(self, relative_position):
+    def _relative_position_bucket(self, relative_position : Tensor):
         """
         Translate relative position to a bucket number for relative attention.
 
@@ -64,9 +52,9 @@ class T5RelativeEmbeddings(Module):
 
         Returns:
             A Tensor with the same shape as relative_position, containing int values in the range [0, num_buckets).
+            0...max_exact-1...num_buckets-1
         """
 
-        relative_buckets = 0
         relative_position = -torch.min(
             relative_position, torch.zeros_like(relative_position)
         )
@@ -87,12 +75,12 @@ class T5RelativeEmbeddings(Module):
             torch.full_like(relative_position_if_large, self.num_buckets - 1),
         )
 
-        relative_buckets += torch.where(
+        relative_buckets = torch.where(
             is_small, relative_position, relative_position_if_large
         )
         return relative_buckets
 
-    def forward(self, query_length, key_length):
+    def forward(self, query_length : int, key_length : int):
         """
         Produce relative position embedding attention biases.
 
@@ -134,20 +122,15 @@ class AGLayerNorm(Module):
         layernom_epsilon: Value added to variance, for numerical stability (default: 1e-6).
     """
 
-    def __init__(self, config):
-        super().__init__()
+    def __init__(self, config : dict[str, Any]):
+        super().__init__() # type: ignore
         self.num_ele = config["embedding_dim"]
         self.epsilon = config.get("layernorm_epsilon", 1e-6)
-        self.register_parameter(
-            name="weight",
-            param=Parameter(
-                torch.ones(
-                    self.num_ele,
-                )
-            ),
-        )
+        param : Parameter = Parameter(torch.ones(self.num_ele)) # type: ignore
 
-    def forward(self, xs):
+        self.register_parameter(name="weight", param=param)
+
+    def forward(self, xs : Tensor):
         """
         Apply layernorm to input tensor.
         Regardless of input dtype, normalizations are always calculated in FP32.
@@ -160,7 +143,7 @@ class AGLayerNorm(Module):
             Normalized Tensor of same dtype and shape as xs.
         """
         xln = xs.to(torch.float32)
-        var = torch.mean(torch.square(xln), dim=-1, keepdims=True)
+        var = torch.mean(torch.square(xln), dim=-1, keepdim=True)
         mul = torch.rsqrt(var + self.epsilon)
         ys = xs * mul
         ys = ys * self.weight
@@ -180,8 +163,8 @@ class QKVLayer(Module):
         pre_attn_dropout: Pre-attention dropout value (default: 0.0 -> no dropout).
     """
 
-    def __init__(self, config):
-        super().__init__()
+    def __init__(self, config : dict[str, Any]):
+        super().__init__() # type: ignore
 
         self.embedding_dim = config["embedding_dim"]
         self.num_heads = config["num_heads"]
@@ -199,7 +182,7 @@ class QKVLayer(Module):
 
         self.pre_attn_layernorm = AGLayerNorm(config)
 
-    def _normalize_kq(self, kq):
+    def _normalize_kq(self, kq : Tensor):
         """
         Normalizes key/query values. Regardless of input dtype, normalization is carried out in FP32.
 
@@ -210,11 +193,11 @@ class QKVLayer(Module):
             Normalized Tensor of same shape and dtype as kq.
         """
         epsilon = torch.Tensor([1.0e-6]).to(kq.dtype).to(kq.device)
-        kq_sum_sqr = torch.sum(torch.square(kq), axis=-1, keepdims=True)
+        kq_sum_sqr = torch.sum(torch.square(kq), dim=-1, keepdim=True)
         norm_kq = kq * torch.rsqrt(kq_sum_sqr.float() + epsilon).to(kq.dtype)
-        return norm_kq.to(kq.dtype)
+        return norm_kq
 
-    def forward(self, xs):
+    def forward(self, xs : Tensor):
         """
         Calculate QKV values for input sequence embeddings.
 
@@ -259,15 +242,15 @@ class MLP(Module):
         mlp_hidden_dim: Dimensionality of MLP hidden layers.
     """
 
-    def __init__(self, config):
-        super().__init__()
+    def __init__(self, config : dict[str, Any]):
+        super().__init__() # type: ignore
 
         # First layer input dim is equal to model embedding dim.
         cur_dim = config["embedding_dim"]
 
-        modules = []
+        modules : list[Module] = []
         # Create hidden layers, 1 less than total mlp_num_layers.
-        for i in range(0, config["mlp_num_layers"] - 1):
+        for _ in range(0, config["mlp_num_layers"] - 1):
             modules.append(
                 Sequential(
                     Linear(cur_dim, config["mlp_hidden_dim"], bias=False), ReLU()
@@ -279,7 +262,7 @@ class MLP(Module):
         modules.append(Linear(cur_dim, config["embedding_dim"], bias=False))
         self.layers = ModuleList(modules)
 
-    def forward(self, xs):
+    def forward(self, xs : Tensor):
         """
         Apply MLP to input.
 
@@ -310,18 +293,14 @@ class DecoderLayer(Module):
         normalize_keys: Whether or not keys (and queries) will be normalized (default: True).
     """
 
-    def __init__(self, config):
-        super().__init__()
+    def __init__(self, config : dict[str, Any]):
+        super().__init__() # type: ignore
 
         self.embedding_dim = config["embedding_dim"]
         self.num_heads = config["num_heads"]
         self.head_dim = self.embedding_dim // self.num_heads
 
         self.relative_positions = T5RelativeEmbeddings(config)
-
-        self.gate_type = "residual"
-        self.single_gate = False
-        self.skip_ffn = False
 
         self.attn_dropout = None
         if (dropout_rate := config.get("attn_dropout", 0.0)) > 0.0:
@@ -346,7 +325,7 @@ class DecoderLayer(Module):
         if self.normalize_keys:
             self.register_parameter(
                 name="attention_scale_factors",
-                param=Parameter(
+                param=Parameter( # type: ignore
                     torch.ones(
                         self.num_heads,
                     )
@@ -357,7 +336,7 @@ class DecoderLayer(Module):
         self.ffn = MLP(config)
         self.pre_ffn_layernorm = AGLayerNorm(config)
 
-    def _get_causal_mask(self, num_qs, num_ks):
+    def _get_causal_mask(self, num_qs : int, num_ks : int):
         """
         Helper function to generate a causal mask for causal Language Modeling. Ensures we only pay attention to the past.
         Essentially a recangular Boolean matrix, with diagonal and upper triangle set to False, and lower triangle set to True.
@@ -371,7 +350,7 @@ class DecoderLayer(Module):
         mask = (kidx - qidx) < 0
         return mask
 
-    def forward(self, xs):
+    def forward(self, xs : Tensor):
         """
         Apply the layer (query, key, value calculation, attention, ffn) to input sequence.
 
@@ -388,7 +367,7 @@ class DecoderLayer(Module):
         )  # (batch_size, seq_len, num_heads, head_dim)
         rel_position_bias = self.relative_positions(
             seq_length, seq_length
-        )  # (1, num_heads, queries_length, key_length)
+        )  # (1, num_heads, queries_length=seq_length, key_length=seq_length)
         causal_mask = (
             self._get_causal_mask(seq_length, seq_length)
             .to(queries.device)
@@ -430,8 +409,8 @@ class Decoder(Module):
         num_layers: Number of DecoderLayers.
     """
 
-    def __init__(self, config):
-        super().__init__()
+    def __init__(self, config : dict[str, Any]):
+        super().__init__() # type: ignore
         self.config = config
         self.embedding = Embedding(config["vocab_size"], config["embedding_dim"])
         self.layers = ModuleList(
@@ -440,7 +419,7 @@ class Decoder(Module):
         self.final_layernorm = AGLayerNorm(config)
         self.dtype = self.final_layernorm.weight.dtype
 
-    def _apply(self, fn, recurse=True):
+    def _apply(self, fn : Callable[..., Any], recurse : bool =True):
         """
         Original AG runs inference in bfloat16, but certain operations (parts of AGLayerNorm) are forced to be in fp32.
         In particular, original AG *never* downcasts the input/outpout embedding, this is *always* in fp32.
@@ -457,14 +436,15 @@ class Decoder(Module):
                 ]  # skip dtype conversions for embedding
             )
             if not is_dtype:
-                self.embedding._apply(fn)
-            self.layers._apply(fn, recurse=recurse)
-            self.final_layernorm._apply(fn, recurse=recurse)
+                self.embedding._apply(fn) # type: ignore
+            self.layers._apply(fn, recurse=recurse) # type: ignore
+            self.final_layernorm._apply(fn, recurse=recurse) # type: ignore
 
-        super()._apply(fn, recurse=False)
+        super()._apply(fn, recurse=False) # type: ignore
         self.dtype = self.final_layernorm.weight.dtype
+        return self
 
-    def forward(self, xs):
+    def forward(self, xs : Tensor):
         """
         Apply full decoder stack: Embed input tokens, send through DecoderLayers with attention, project back into token embedding space.
 

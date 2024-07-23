@@ -1,30 +1,11 @@
-from alphageo.optional_imports import raise_if_called, raise_if_instanciated
+from typing import Any
+from torch import Tensor, cat
+from torch.nn.functional import pad
+
+from alphageo.model import Decoder
 
 
-try:
-    from torch import cat, LongTensor
-    from torch.nn.functional import pad
-except ImportError:
-    cat = raise_if_called("torch")
-    LongTensor = raise_if_instanciated("torch")
-    pad = raise_if_called("pad")
-
-
-def decode(model, inp):
-    """
-    Get the log probability over the next token, given a model and input sequence.
-
-    Args:
-        model: A (Decoder) Language Model.
-        inp: Input sequence, a LongTensor of shape (batch_size, sequence_length).
-
-    Returns:
-        A FloatTensor of shape (batch_size, sequence_length): log prob per token.
-    """
-    return model(inp).log_softmax(dim=-1)
-
-
-def brevity_penalty(length, alpha=0.6, numerator_bias=5, denominator_bias=6):
+def brevity_penalty(length : int, alpha : float = 0.6, numerator_bias : int = 5, denominator_bias : int = 6) -> float:
     """
     Calculate a brevity penalty for short sequences.
     In Language Modeling, short sequences are usually inherently more likley than longer ones because of the overall probability of a sequence is the product of probabilities for each word P(w1...wn) = P(wn) * P(wn-1) * ... * P(w1).
@@ -43,8 +24,8 @@ def brevity_penalty(length, alpha=0.6, numerator_bias=5, denominator_bias=6):
 
 
 def priority_beam_search(
-    model, inp, beam_width=4, num_return_sequences=2, eos_id=263, max_new_tokens=512
-):
+    model : Decoder, inp : Tensor, beam_width : int = 4, num_return_sequences : int = 2, eos_id : int = 263, max_new_tokens : int = 512, tokenizer : Any = None
+) -> list[tuple[Tensor, float]]:
     """
     Beam search with a priority queue, designed to be close to AG's beam search at
     https://github.com/google-deepmind/alphageometry/blob/main/beam_search.py
@@ -62,10 +43,10 @@ def priority_beam_search(
     Returns:
         A list of `[(seq1, score1), ..., (seq_n, score_n)]` tuples of sequence token IDs (list of int) and final sequence log prob (float).
     """
-    live_sequences = [
+    live_sequences : list[tuple[Tensor, float]] = [
         (inp, 0.0)
     ]  # essentially a priority queue for unfinished sequences
-    finished_sequences = []
+    finished_sequences : list[tuple[Tensor, float]] = []
     start_len = inp.shape[-1]
     batch_size = beam_width  # at each time step, we expand the top beam_width sequences
 
@@ -79,13 +60,10 @@ def priority_beam_search(
 
         # break condition:
         if (
-            finished_sequences
-            and len(finished_sequences)
-            >= num_return_sequences  # we have at least as many finished sequences as we want to return
-            and cur_batch[0][1]
-            < finished_sequences[-1][
-                1
-            ]  # the current best unfinished sequence is *worse* than the worst finished one.
+            # we have at least as many finished sequences as we want to return
+            finished_sequences and len(finished_sequences) >= num_return_sequences
+            # the current best unfinished sequence is *worse* than the worst finished one.
+            and cur_batch[0][1] < finished_sequences[-1][1]
         ):
             break
 
@@ -98,7 +76,7 @@ def priority_beam_search(
             [pad(item[0], (0, max_len - item[0].shape[-1])) for item in cur_batch]
         )
 
-        batch_log_p = model(batch_inp).log_softmax(dim=-1)
+        batch_log_p : list[Tensor] = model(batch_inp).log_softmax(dim=-1)
 
         for b_idx, (log_p, length) in enumerate(zip(batch_log_p, batch_lens)):
             cur_inp, cur_score = cur_batch[b_idx]  # input Tensor, current score
@@ -125,7 +103,7 @@ def priority_beam_search(
 
                 if idx == eos_id and good_score:
                     # EOS was generated
-                    new_seq = new_inp.flatten().tolist()
+                    new_seq = new_inp.flatten()
                     finished_sequences.append((new_seq, new_score))
                     finished_sequences.sort(key=lambda x: x[1], reverse=True)
                     finished_sequences = finished_sequences[
@@ -144,8 +122,8 @@ def priority_beam_search(
 
 
 def simple_beam_search(
-    model, inp, beam_width=4, num_return_sequences=2, eos_idx=263, max_tokens=128
-):
+    model : Decoder, inp : Tensor, beam_width : int =4, num_return_sequences : int =2, eos_idx : int =263, max_tokens : int=128
+) -> list[tuple[Tensor, float]]:
     """
     Implementation of a very straight-forward beam search. A bit simpler than priority_beam_search, but not guranteed to generate the same sequences (though it often may).
     At each time step, the input to the model will be of shape (beam_width, current_sequence_length).
@@ -162,69 +140,4 @@ def simple_beam_search(
         A list of `[(seq1, score1), ..., (seq_n, score_n)]` tuples of sequence token IDs (list of int) and final sequence log prob (float).
 
     """
-
-    inp = inp.tile(beam_width, 1)  # first iteration, all sequences start the same
-    scores = [0 for _ in range(beam_width)]  # keeping track of scores
-
-    done_seqs = []  # finished sequences
-    done_scores = []  # and scores
-
-    num_new_tokens = 0
-
-    while num_new_tokens < max_tokens and (  # we're not too long
-        max(scores)
-        >= min(
-            done_scores, default=-1_000_000
-        )  # best live score is better than worst finished
-        or len(done_seqs) < num_return_sequences  # we don't have enough sequences yet
-    ):
-        next_scores = model(inp)[:, -1].log_softmax(dim=-1)  # log probs for next tokens
-        next_candidates = next_scores.sort(dim=-1, descending=True).indices[
-            :, :beam_width
-        ]
-        beam_items = []
-        for idx, (cur_seq, cands) in enumerate(
-            zip(inp, next_candidates)
-        ):  # beam_width top next tokens per current input sequence
-            for (
-                cand
-            ) in cands:  # next potential token for one of the current input sequences
-                new_seq = cat([cur_seq, cand.unsqueeze(0)])
-                new_score = scores[idx] + next_scores[idx][cand]
-                if cand == eos_idx:
-                    # done generating this sequence!
-                    if (seq_list := new_seq.tolist()) not in done_seqs:
-                        # this is a new sequence
-                        done_seqs.append(seq_list)
-                        done_scores.append(new_score.item())
-                    else:
-                        # we have generated this same sequence via a different decoding pass; keep the more likely one
-                        seq_idx = done_seqs.index(seq_list)
-                        done_scores[seq_idx] = max(done_scores[seq_idx], new_score)
-                else:
-                    beam_items.append((new_seq, new_score))
-
-        beam_items.sort(key=lambda x: x[1], reverse=True)  # sort by score
-
-        # build the beam input for next iteration
-        new_inp = [beam_items[0][0].tolist()]
-        new_scores = [beam_items[0][1].item()]
-        for item in beam_items[1:]:
-            if (x := item[0].tolist()) not in new_inp:
-                # different new inputs
-                new_inp.append(x)
-                new_scores.append(item[1].item())
-            else:
-                # the same input sequence is already in the beam... keep the more likely one
-                new_idx = new_inp.index(x)
-                new_scores[new_idx] = max(new_scores[new_idx], item[1].item())
-
-        # prune new input to beam_width
-        new_inp = new_inp[:beam_width]
-        inp = LongTensor(new_inp).to(inp.device)
-        scores = new_scores[: inp.shape[0]]
-        num_new_tokens += 1
-
-    return sorted(zip(done_seqs, done_scores), key=lambda x: x[1], reverse=True)[
-        :num_return_sequences
-    ]
+    ...

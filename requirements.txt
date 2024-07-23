@@ -1,5 +1,7 @@
-numpy
+numpy<2
 scipy
 matplotlib
 typing-extensions
-sentencepiece==0.1.99
+sentencepiece
+torch==2.2.2
+-e git+https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git@neo#egg=geosolver

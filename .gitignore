@@ -44,3 +44,5 @@ default_configs/
 
 # Coverage data
 .coverage
+
+sentencepiece_tuto

@@ -17,23 +17,29 @@
 
 import pytest
 
-from alphageo.translate import translate_constrained_to_constructive
-
+from alphageo.translate import setup_str_from_problem, translate_constrained_to_constructive
+from geosolver.api import GeometricSolverBuilder
+from geosolver.problem import Problem
 
 @pytest.mark.parametrize(
     "test_input,expected",
     [
-        (("d", "T", list("addb")), ("on_dia", ["d", "b", "a"])),
-        (("d", "T", list("adbc")), ("on_tline", ["d", "a", "b", "c"])),
-        (("d", "P", list("bcda")), ("on_pline", ["d", "a", "b", "c"])),
-        (("d", "D", list("bdcd")), ("on_bline", ["d", "c", "b"])),
-        (("d", "D", list("bdcb")), ("on_circle", ["d", "b", "c"])),
-        (("d", "D", list("bacd")), ("eqdistance", ["d", "c", "b", "a"])),
-        (("d", "C", list("bad")), ("on_line", ["d", "b", "a"])),
-        (("d", "C", list("bad")), ("on_line", ["d", "b", "a"])),
-        (("d", "O", list("abcd")), ("on_circum", ["d", "a", "b", "c"])),
+        (("d", "T", tuple("addb")), "on_dia d b a"),
+        (("d", "T", tuple("adbc")), "on_tline d a b c"),
+        (("d", "P", tuple("bcda")), "on_pline d a b c"),
+        (("d", "D", tuple("bdcd")), "on_bline d c b"),
+        (("d", "D", tuple("bdcb")), "on_circle d b c"),
+        (("d", "D", tuple("bacd")), "eqdistance d c b a"),
+        (("d", "C", tuple("bad")), "on_line d b a"),
+        (("d", "C", tuple("bad")), "on_line d b a"),
+        (("d", "O", tuple("abcd")), "on_circum d a b c"),
     ],
 )
-def test_translate_constrained_to_constructive(test_input, expected):
+def test_translate_constrained_to_constructive(test_input : tuple[str, str, tuple[str]], expected : str):
     actual = translate_constrained_to_constructive(*test_input)
     assert actual == expected
+
+def test_translate_problem():
+    builder = GeometricSolverBuilder()
+    string = setup_str_from_problem(Problem.from_text("a b c = triangle; h = on_tline b a c, on_tline c a b ? perp a h b c").renamed(), builder.defs)
+    assert string == "{S} a : ; b : ; c : ; d : T a b c d 00 T a c b d 01 ? T a d b c"

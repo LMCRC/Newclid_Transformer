@@ -1,0 +1,1 @@
+pytest --log-cli-level=INFO --log-file log_2018_p1.txt -k test_imo_2018_p1 tests\alphageometry_test.py

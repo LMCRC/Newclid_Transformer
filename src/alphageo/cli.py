@@ -1,6 +1,5 @@
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
-
-DEFAULT_OUTPUT = "#Default"
+import logging
 
 
 def run_cli() -> Namespace:
@@ -8,19 +7,16 @@ def run_cli() -> Namespace:
     parser.add_argument(
         "--problems-file",
         default="problems_datasets/examples.txt",
-        type=str,
         help="Path to the text file contains the problem strings.",
     )
     parser.add_argument(
         "--problem",
         default="orthocenter",
-        type=str,
         help="text file contains the problem strings. See imo_ag_30.txt for example.",
     )
     parser.add_argument(
         "--exp",
         default="exp",
-        type=str,
         help="experiment name, including dataset, modules, version",
     )
     parser.add_argument(
@@ -34,11 +30,6 @@ def run_cli() -> Namespace:
         default=None,
         help="Path to the list of deduction (explicit) rules used by DD."
         " Defaults to geosolver's default. See geosolver for more details.",
-    )
-    parser.add_argument(
-        "--solver-only",
-        action="store_true",
-        help="If set, only runs geometric solver without the LLM.",
     )
     parser.add_argument(
         "--ckpt",
@@ -72,7 +63,7 @@ def run_cli() -> Namespace:
     parser.add_argument(
         "--out-folder",
         "-o",
-        default=DEFAULT_OUTPUT,
+        default=None,
         help="Path to the solution output folder.",
     )
     parser.add_argument(
@@ -89,9 +80,10 @@ def run_cli() -> Namespace:
         help="Depth of the proof search across LM sugestions.",
     )
     parser.add_argument(
-        "--logging",
-        action="store_true",
-        help="If set, logs to stdout.",
+        "--log-level",
+        default=logging.INFO,
+        type=int,
+        help="Logging level.",
     )
     args, _ = parser.parse_known_args()
     return args

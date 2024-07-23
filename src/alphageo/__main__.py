@@ -1,105 +1,75 @@
 from pathlib import Path
 import json
-import os
 from alphageo.alphageometry import get_lm, get_tokenizer, run_alphageometry
-from alphageo.cli import DEFAULT_OUTPUT, run_cli
-
-try:
-    import torch
-except ImportError:
-    torch = object()
+from alphageo.cli import run_cli
+import logging
 
 from geosolver import GeometricSolverBuilder
-RESULTS_DIR = "./results"
+from geosolver.problem import Problem
+import torch
+RESULTS_DIR = Path("./results")
 
 def main() -> bool:
     args = run_cli()
 
-    if args.logging:
-        import logging
-        logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=args.log_level)
 
     # when using the language model,
     # point names will be renamed to alphabetical a, b, c, d, e, ...
     # instead of staying with their original names,
     # in order to match the synthetic training data generation.
-    need_rename = not args.solver_only
 
     out_folder = args.out_folder
-    if out_folder == DEFAULT_OUTPUT:
-        out_folder = f"{RESULTS_DIR}/{args.exp}/{args.problem}"
-    if out_folder is not None:
-        if out_folder == "None":
-            out_folder = None
-        else:
-            out_folder = Path(out_folder)
-            out_folder.mkdir(parents=True, exist_ok=True)
-    
-        single_file_stats = out_folder / "stats.json"
-        if os.path.exists(single_file_stats):
-            tmp = json.load(open(single_file_stats))
-            if "success" in tmp:
-                if tmp["success"] and tmp["success"] is not None:
-                    if args.logging:
-                        logging.info(f"[{args.problem}] stats found!")
-                    return True
+    if out_folder is None:
+        out_folder = RESULTS_DIR/args.exp/args.problem
+    else:
+        out_folder = Path(out_folder)
+        out_folder.mkdir(parents=True, exist_ok=True)
 
-    solver_builder = GeometricSolverBuilder().load_problem_from_file(
+    single_file_stats = out_folder / "stats.json"
+
+    solver_builder = GeometricSolverBuilder()
+    problem = Problem.from_file(
         problems_path=args.problems_file,
         problem_name=args.problem,
-        translate=need_rename,
     )
-    if args.defs is not None:
-        solver_builder.load_defs_from_file(args.defs)
-    if args.rules is not None:
-        solver_builder.load_rules_from_file(args.rules)
-    solver = solver_builder.build()
+    if args.defs:
+        solver_builder.load_defs_from_file(Path(args.defs))
+    if args.rules:
+        solver_builder.load_rules_from_file(Path(args.rules))
 
-    success = False
-    stats = {"name": args.problem}
+    stats = {"problem": args.problem}
 
-    try:
-        if args.solver_only:
-            success = solver.run()
-        else:
-            with torch.no_grad():
-                model = get_lm(args.ckpt, args.device)
-                tokenizer = get_tokenizer(args.vocab)
-                success = run_alphageometry(
-                    solver,
-                    model,
-                    tokenizer,
-                    args.device,
-                    args.lm_beam_width,
-                    args.batch_size,
-                    args.search_depth,
-                    args.search_width,
-                    out_folder,
-                )
-        #
-    except Exception as inst:
-        stats["exception"] = str(inst)
+    with torch.no_grad():
+        model = get_lm(Path(args.ckpt), args.device)
+        tokenizer = get_tokenizer(Path(args.vocab))
+        solver = run_alphageometry(
+            solver_builder,
+            problem,
+            model,
+            tokenizer,
+            args.device,
+            args.lm_beam_width,
+            args.batch_size,
+            args.search_depth,
+            args.search_width,
+        )
 
-    if success:
+    stats.update(solver.run_infos)
+    if stats["success"]:
         if out_folder is not None:
             solver.write_solution(out_folder / "proof_steps.txt")
-            solver.draw_figure(out_folder / "proof_figure.png")
+            solver.draw_figure(False, out_folder / "proof_figure.png")
         else:
             solver.write_solution(out_folder)
         stats.update(solver.run_infos)
-    #
-    else:
-        stats["success"] = success # case when llm can't solve it
-    
-    if args.logging:
-        logging.info(f"[{args.problem}] Stats={stats}")
-        logging.info(f"[{args.problem}] Success={success}")
-    
+
+    logging.info(f"[{args.problem}] Stats={stats}")
+
     if out_folder is not None:
         with open(single_file_stats,"w") as out:
             out.write(json.dumps(stats,indent=2))
-
-    return success
+    return stats["success"]
 
 
 if __name__ == "__main__":
