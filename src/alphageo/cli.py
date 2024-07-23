@@ -1,3 +1,4 @@
+from __future__ import annotations
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 import logging
 

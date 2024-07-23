@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any
 from torch import Tensor, cat
 from torch.nn.functional import pad

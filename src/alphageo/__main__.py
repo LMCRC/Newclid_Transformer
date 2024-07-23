@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pathlib import Path
 import json
 from alphageo.alphageometry import get_lm, get_tokenizer, run_alphageometry
