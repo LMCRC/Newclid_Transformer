@@ -41,10 +41,15 @@ def main() -> bool:
         problems : list[Problem] = []
         with open(out_folder / "aux.txt", "r") as aux:
             for line in aux.readlines():
+                line = line.strip()
+                if not line:
+                    continue
                 problems.append(Problem.from_text(line))
         assert len(problems) > 0
         for problem in problems:
+            logging.info(f"Building {problem}")
             solver = deepcopy(solver_builder).load_problem(problem).build()
+            logging.info("Built. Now try to solve")
             if solver.run():
                 break
     else:
@@ -79,9 +84,11 @@ def main() -> bool:
 
     with open(out_folder / "stats.json", "w") as out:
         out.write(json.dumps(stats,indent=2))
-    with open(out_folder / "aux.txt", "w") as out:
-        for problem in problems:
-            print(str(problem), file=out)
+
+    if not args.have_aux:
+        with open(out_folder / "aux.txt", "w") as out:
+            for problem in problems:
+                print(str(problem), file=out)
     return stats["success"]
 
 
