@@ -50,7 +50,7 @@ def run_alphageometry(
     model_num_return_sequences: int,
     search_depth: int,
     beam_size: int,
-) -> GeometricSolver:
+) -> tuple[GeometricSolver, list[Problem]]:
     """Simplified code to run AlphaGeometry proof search.
 
     We removed all optimizations that are infrastructure-dependent, e.g.
@@ -72,11 +72,13 @@ def run_alphageometry(
     Returns:
       boolean of whether this is solved.
     """
+    problems = [problem]
+
     # First we run the symbolic engine DD+AR:
     solver = deepcopy(builder).load_problem(problem).build()
     success = solver.run()
     if success:
-        return solver
+        return (solver, problems)
 
     # translate the problem to a string of grammar that the LM is trained on.
     string = setup_str_from_problem(problem, builder.defs)
@@ -142,6 +144,7 @@ def run_alphageometry(
                 try:
                     logging.info('Try to build and solve: (%d points) "%s"\n', len(new_problem.points()), new_problem)
                     solver = deepcopy(builder).load_problem(new_problem).build()
+                    problems.append(new_problem)
                 except ConstructionError as e:
                     logging.info('ConstructionError: "%s"\n', str(e))
                     continue
@@ -150,7 +153,7 @@ def run_alphageometry(
                     continue
                 success = solver.run()
                 if success:
-                    return solver
+                    return (solver, problems)
 
                 # Add the candidate to the beam queue.
                 new_queue.add(
@@ -172,7 +175,7 @@ def run_alphageometry(
         # replace the old queue with new queue before the new proof search depth.
         beam_queue = new_queue
 
-    return solver
+    return (solver, problems)
 
 
 def get_lm(ckpt_init: Path, device: str) -> "Decoder":

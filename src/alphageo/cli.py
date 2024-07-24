@@ -7,13 +7,19 @@ def run_cli() -> Namespace:
     parser = ArgumentParser("alphageo", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "--problems-file",
-        default="problems_datasets/examples.txt",
+        default=None,
         help="Path to the text file contains the problem strings.",
     )
     parser.add_argument(
         "--problem",
         default="orthocenter",
         help="text file contains the problem strings. See imo_ag_30.txt for example.",
+    )
+    parser.add_argument(
+        "--have-aux",
+        default=False,
+        action="store_true",
+        help="In the outfolder we have a file with a list of problems based on adding auxilliary points to an original problem"
     )
     parser.add_argument(
         "--exp",
@@ -31,6 +37,11 @@ def run_cli() -> Namespace:
         default=None,
         help="Path to the list of deduction (explicit) rules used by DD."
         " Defaults to geosolver's default. See geosolver for more details.",
+    )
+    parser.add_argument(
+        "--agent",
+        default=None,
+        help="Agent for geosolver"
     )
     parser.add_argument(
         "--ckpt",
@@ -58,7 +69,7 @@ def run_cli() -> Namespace:
     )
     parser.add_argument(
         "--device",
-        default="cuda",
+        default="cpu",
         help="compute device for LM",
     )
     parser.add_argument(
