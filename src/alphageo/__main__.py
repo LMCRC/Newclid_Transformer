@@ -2,15 +2,52 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 import json
+from typing import Optional
 from alphageo.alphageometry import get_lm, get_tokenizer, run_alphageometry
 from alphageo.cli import run_cli
 import logging
-
-from geosolver import AGENTS_REGISTRY, GeometricSolverBuilder
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from geosolver import AGENTS_REGISTRY, GeometricSolver, GeometricSolverBuilder
 from geosolver.problem import Problem
 import torch
 
 RESULTS_DIR = Path("./results")
+
+
+def solve_problem(
+    problem: Problem, solver_builder: GeometricSolverBuilder
+) -> GeometricSolver:
+    logging.info(f"Building {problem}")
+    solver = deepcopy(solver_builder).load_problem(problem).build()
+    logging.info(f"Built. Now try to solve {problem}")
+    solver.run()
+    return solver
+
+
+def parallel_solve(
+    problems: list[Problem],
+    solver_builder: GeometricSolverBuilder,
+    max_workers: Optional[int] = None,
+) -> GeometricSolver:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_problem = {
+            executor.submit(solve_problem, problem, solver_builder): problem
+            for problem in problems
+        }
+        for future in as_completed(future_to_problem):
+            problem = future_to_problem[future]
+            try:
+                solver = future.result()
+                if solver.run_infos["success"]:
+                    logging.info(f"Solved: {problem}")
+                    return solver
+                else:
+                    logging.error(f"Problem {problem} was not solved")
+            except Exception as exc:
+                logging.error(
+                    f"Problem {problem} generated an exception when being solved: {exc}"
+                )
+    return solver  # type: ignore
 
 
 def main() -> bool:
@@ -48,12 +85,7 @@ def main() -> bool:
                     continue
                 problems.append(Problem.from_text(line))
         assert len(problems) > 0
-        for problem in problems:
-            logging.info(f"Building {problem}")
-            solver = deepcopy(solver_builder).load_problem(problem).build()
-            logging.info("Built. Now try to solve")
-            if solver.run():
-                break
+        solver = parallel_solve(problems, solver_builder)
     else:
         assert args.problems_file
         problem = Problem.from_file(
@@ -75,7 +107,6 @@ def main() -> bool:
                 args.search_width,
             )
 
-    assert solver  # type: ignore
     stats.update(solver.run_infos)
     if stats["success"]:
         solver.write_solution(out_folder / "proof_steps.txt")
