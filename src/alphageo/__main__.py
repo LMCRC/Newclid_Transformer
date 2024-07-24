@@ -9,7 +9,9 @@ import logging
 from geosolver import AGENTS_REGISTRY, GeometricSolverBuilder
 from geosolver.problem import Problem
 import torch
+
 RESULTS_DIR = Path("./results")
+
 
 def main() -> bool:
     args = run_cli()
@@ -23,7 +25,7 @@ def main() -> bool:
 
     out_folder = args.out_folder
     if out_folder is None:
-        out_folder = RESULTS_DIR/args.exp/args.problem
+        out_folder = RESULTS_DIR / args.exp / args.problem
     else:
         out_folder = Path(out_folder)
     out_folder.mkdir(parents=True, exist_ok=True)
@@ -38,7 +40,7 @@ def main() -> bool:
 
     stats = {"problem": args.problem}
     if args.have_aux:
-        problems : list[Problem] = []
+        problems: list[Problem] = []
         with open(out_folder / "aux.txt", "r") as aux:
             for line in aux.readlines():
                 line = line.strip()
@@ -57,7 +59,7 @@ def main() -> bool:
         problem = Problem.from_file(
             problems_path=args.problems_file,
             problem_name=args.problem,
-        )
+        ).renamed()
         with torch.no_grad():
             model = get_lm(Path(args.ckpt), args.device)
             tokenizer = get_tokenizer(Path(args.vocab))
@@ -73,7 +75,7 @@ def main() -> bool:
                 args.search_width,
             )
 
-    assert solver # type: ignore
+    assert solver  # type: ignore
     stats.update(solver.run_infos)
     if stats["success"]:
         solver.write_solution(out_folder / "proof_steps.txt")
@@ -83,7 +85,7 @@ def main() -> bool:
     logging.info(f"[{args.problem}] Stats={stats}")
 
     with open(out_folder / "stats.json", "w") as out:
-        out.write(json.dumps(stats,indent=2))
+        out.write(json.dumps(stats, indent=2))
 
     if not args.have_aux:
         with open(out_folder / "aux.txt", "w") as out:
