@@ -29,11 +29,14 @@ import sentencepiece as spm
 import os
 
 from alphageo.model import Decoder
-from alphageo.translate import setup_str_from_problem, try_translate_constrained_to_construct
+from alphageo.translate import (
+    setup_str_from_problem,
+    try_translate_constrained_to_construct,
+)
 from alphageo.inference import priority_beam_search as beam_search
 from geosolver.proof import ConstructionError
 
-from torch import load, LongTensor # type: ignore
+from torch import load, LongTensor  # type: ignore
 
 if TYPE_CHECKING:
     from geosolver import GeometricSolverBuilder, GeometricSolver
@@ -42,7 +45,7 @@ if TYPE_CHECKING:
 
 def run_alphageometry(
     builder: "GeometricSolverBuilder",
-    problem : "Problem",
+    problem: "Problem",
     model: "Decoder",
     tokenizer: "spm.SentencePieceProcessor",
     device: str,
@@ -99,8 +102,8 @@ def run_alphageometry(
 
     for depth in range(search_depth):
         logging.info(f"Depth {depth}. There are {len(beam_queue)} nodes to expand:")
-        for _, data in beam_queue:
-            logging.info(data)
+        for _, (string, problem) in beam_queue:
+            logging.info(f"problem : {str(problem)} -- {string}")
 
         new_queue = BeamQueue(max_size=beam_size)
 
@@ -114,13 +117,13 @@ def run_alphageometry(
                 beam_width=model_beam_width,
                 num_return_sequences=model_num_return_sequences,
             )
-            seqs_str = [tokenizer.decode_ids(o[0][len(tokens) :].tolist()).strip() for o in outs] # type: ignore
+            seqs_str = [
+                tokenizer.decode_ids(o[0][len(tokens) :].tolist()).strip() for o in outs
+            ]  # type: ignore
             scores = [o[1] for o in outs]
 
             for i, out_string in enumerate(seqs_str):
-                logging.info(
-                    f"LM output {i+1}: {out_string} (score: {scores[i]})"
-                )
+                logging.info(f"LM output {i+1}: {out_string} (score: {scores[i]})")
             # outputs = model.beam_decode(string, eos_tokens=[';'])
 
             # translate lm output to the constructive language.
@@ -132,7 +135,9 @@ def run_alphageometry(
             for lm_out, score in zip(seqs_str, scores):
                 logging.info('Trying LM output (score=%f): "%s"', score, lm_out)
 
-                aux_string = try_translate_constrained_to_construct(lm_out, problem.points())
+                aux_string = try_translate_constrained_to_construct(
+                    lm_out, problem.points()
+                )
 
                 if aux_string.startswith("ERROR:"):
                     # the construction is invalid.
@@ -142,7 +147,11 @@ def run_alphageometry(
 
                 new_problem = problem.with_more_construction(aux_string)
                 try:
-                    logging.info('Try to build and solve: (%d points) "%s"\n', len(new_problem.points()), new_problem)
+                    logging.info(
+                        'Try to build and solve: (%d points) "%s"\n',
+                        len(new_problem.points()),
+                        new_problem,
+                    )
                     solver = deepcopy(builder).load_problem(new_problem).build()
                     problems.append(new_problem)
                 except ConstructionError as e:
@@ -159,10 +168,7 @@ def run_alphageometry(
                 new_queue.add(
                     # The string for the new node is old_string + lm output +
                     # the special token asking for a new auxiliary point ' x00':
-                    data=(
-                        string + " " + lm_out + " x00",
-                        new_problem
-                    ),
+                    data=(string + " " + lm_out + " x00", new_problem),
                     # the score of each node is sum of score of all nodes
                     # on the path to itself. For beam search, there is no need to
                     # normalize according to path length because all nodes in beam
@@ -197,10 +203,10 @@ class BeamQueue:
     """Keep only the top k objects according to their values."""
 
     def __init__(self, max_size: int = 512):
-        self.queue : list[tuple[float, Any]] = []
+        self.queue: list[tuple[float, Any]] = []
         self.max_size = max_size
 
-    def add(self, val: float, data : Any) -> None:
+    def add(self, val: float, data: Any) -> None:
         """Add a new node to this queue."""
 
         if len(self.queue) < self.max_size:
