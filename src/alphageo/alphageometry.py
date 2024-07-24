@@ -118,8 +118,9 @@ def run_alphageometry(
                 num_return_sequences=model_num_return_sequences,
             )
             seqs_str = [
-                tokenizer.decode_ids(o[0][len(tokens) :].tolist()).strip() for o in outs
-            ]  # type: ignore
+                tokenizer.decode_ids(o[0][len(tokens) :].tolist()).strip()  # type: ignore
+                for o in outs
+            ]
             scores = [o[1] for o in outs]
 
             for i, out_string in enumerate(seqs_str):
