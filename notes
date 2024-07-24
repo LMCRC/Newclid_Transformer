@@ -4,5 +4,5 @@ alphageo --device cpu -o p15 --problems-file problems_datasets/examples.txt --pr
 alphageo --device cpu -o p55 --problems-file problems_datasets/examples.txt --problem translated_imo_2018_p1 --search-width 55 --search-depth 2 --batch-size 32 --lm-beam-width 32
 alphageo --device cpu -o p512 --problems-file problems_datasets/examples.txt --problem translated_imo_2018_p1 --search-width 512 --search-depth 16 --batch-size 32 --lm-beam-width 32
 alphageo --problems-file problems_datasets/examples.txt --problem translated_imo_2012_p5 --agent flemmard  --search-width 5 --search-depth 2 --batch-size 32 --lm-beam-width 32
-alphageo --problems-file problems_datasets/examples.txt --problem translated_imo_2012_p5 --agent flemmard  --search-width 512 --search-depth 3 --batch-size 128 --lm-beam-width 128
+alphageo --problems-file problems_datasets/examples.txt --problem translated_imo_2012_p5 --agent flemmard  --search-width 3 --search-depth 3 --batch-size 3 --lm-beam-width 3
 alphageo --problem translated_imo_2012_p5 --have-aux

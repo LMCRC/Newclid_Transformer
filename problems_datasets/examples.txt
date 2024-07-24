@@ -12,3 +12,5 @@ translated_imo_2012_p5
 c a b = r_triangle c a b; d = foot d c a b; x = on_line x c d; k = on_line k a x, on_circle k b c; l = on_line l b x, on_circle l a c; m = on_line m a l, on_line m b k ? cong m k m l
 translated_imo_2004_p1
 a b c = triangle a b c; o = midpoint o b c; m = on_circle m o b, on_line m a b; n = on_circle n o b, on_line n a c; r = angle_bisector r b a c, angle_bisector r m o n; o1 = circle o1 b m r; o2 = circle o2 c n r; p = on_circle p o1 r, on_circle p o2 r ? coll p b c
+translated_usamo_1988_p4
+a b c = triangle; i = incenter i a b c; a1 = circle a1 i b c; b1 = circle b1 i c a; c1 = circle c1 i a b; o = circle o a b c ? circle o a1 b1 c1
