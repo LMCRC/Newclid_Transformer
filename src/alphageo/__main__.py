@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from geosolver import AGENTS_REGISTRY, GeometricSolver, GeometricSolverBuilder
 from geosolver.problem import Problem
 import torch
+import os
 
 RESULTS_DIR = Path("./results")
 
@@ -29,6 +30,9 @@ def parallel_solve(
     solver_builder: GeometricSolverBuilder,
     max_workers: Optional[int] = None,
 ) -> GeometricSolver:
+    if max_workers is None:
+        max_workers = os.cpu_count()
+    logging.info(f"Using {max_workers=}")
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_problem = {
             executor.submit(solve_problem, problem, solver_builder): problem
@@ -42,10 +46,10 @@ def parallel_solve(
                     logging.info(f"Solved: {problem}")
                     return solver
                 else:
-                    logging.error(f"Problem {problem} was not solved")
+                    logging.info(f"Problem {problem} was not solved")
             except Exception as exc:
-                logging.error(
-                    f"Problem {problem} generated an exception when being solved: {exc}"
+                logging.info(
+                    f"Problem {problem} generated an exception when being built/solved: {exc}"
                 )
     return solver  # type: ignore
 
