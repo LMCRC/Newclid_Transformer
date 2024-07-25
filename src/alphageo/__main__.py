@@ -6,7 +6,7 @@ from typing import Optional
 from alphageo.alphageometry import get_lm, get_tokenizer, run_alphageometry
 from alphageo.cli import run_cli
 import logging
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from geosolver import AGENTS_REGISTRY, GeometricSolver, GeometricSolverBuilder
 from geosolver.problem import Problem
 import torch
@@ -25,6 +25,15 @@ def solve_problem(
     return solver
 
 
+def kill_processes(executor: ProcessPoolExecutor):
+    # Access the internal processes managed by the executor
+    for process in executor._processes.values():
+        print(f"Terminating process {process.pid}")
+        process.terminate()  # Forcefully terminate the process
+        process.join()  # Wait for the process to finish
+        print(f"Process {process.pid} terminated")
+
+
 def parallel_solve(
     problems: list[Problem],
     solver_builder: GeometricSolverBuilder,
@@ -33,7 +42,7 @@ def parallel_solve(
     if max_workers is None:
         max_workers = os.cpu_count()
     logging.info(f"Using {max_workers=}")
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
         future_to_problem = {
             executor.submit(solve_problem, problem, solver_builder): problem
             for problem in problems
@@ -44,6 +53,7 @@ def parallel_solve(
                 solver = future.result()
                 if solver.run_infos["success"]:
                     logging.info(f"Solved: {problem}")
+                    kill_processes(executor)
                     return solver
                 else:
                     logging.info(f"Problem {problem} was not solved")
@@ -69,7 +79,6 @@ def main() -> bool:
         out_folder = RESULTS_DIR / args.exp / args.problem
     else:
         out_folder = Path(out_folder)
-    out_folder.mkdir(parents=True, exist_ok=True)
 
     solver_builder = GeometricSolverBuilder()
     if args.defs:
@@ -111,6 +120,7 @@ def main() -> bool:
                 args.search_width,
             )
 
+    out_folder.mkdir(parents=True, exist_ok=True)
     stats.update(solver.run_infos)
     if stats["success"]:
         solver.write_solution(out_folder / "proof_steps.txt")
