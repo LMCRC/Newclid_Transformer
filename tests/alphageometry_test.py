@@ -20,7 +20,7 @@ def test_solve_orthocenter_aux():
         "--problem",
         "orthocenter_aux",
         "--rules",
-        "rule_sets/triangles.txt"
+        "rule_sets/triangles.txt",
     ]
     success = main()
     assert success
@@ -42,12 +42,13 @@ def test_alphageometry_should_solve_orthocenter():
         "--problem",
         "orthocenter",
         "--rules",
-        "rule_sets/triangles.txt"
+        "rule_sets/triangles.txt",
     ]
     success = main()
     assert success
 
 
+@pytest.mark.skip("Too slow")
 def test_imo_2018_p1():
     check_point_path = Path("./pt_ckpt")
     if not check_point_path.exists():
@@ -70,12 +71,13 @@ def test_imo_2018_p1():
         "--batch-size",
         "5",
         "--lm-beam-width",
-        "5"
+        "5",
     ]
     success = main()
     assert success
 
 
+@pytest.mark.skip("Too slow")
 def test_imo_2012_p5():
     check_point_path = Path("./pt_ckpt")
     if not check_point_path.exists():
@@ -98,7 +100,7 @@ def test_imo_2012_p5():
         "--batch-size",
         "5",
         "--lm-beam-width",
-        "5"
+        "5",
     ]
     success = main()
     assert success

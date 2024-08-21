@@ -17,9 +17,13 @@
 
 import pytest
 
-from alphageo.translate import setup_str_from_problem, translate_constrained_to_constructive
+from alphageo.translate import (
+    setup_str_from_problem,
+    translate_constrained_to_constructive,
+)
 from geosolver.api import GeometricSolverBuilder
-from geosolver.problem import Problem
+from geosolver.problem import ProblemJGEX
+
 
 @pytest.mark.parametrize(
     "test_input,expected",
@@ -35,11 +39,19 @@ from geosolver.problem import Problem
         (("d", "O", tuple("abcd")), "on_circum d a b c"),
     ],
 )
-def test_translate_constrained_to_constructive(test_input : tuple[str, str, tuple[str]], expected : str):
+def test_translate_constrained_to_constructive(
+    test_input: tuple[str, str, tuple[str]], expected: str
+):
     actual = translate_constrained_to_constructive(*test_input)
     assert actual == expected
 
+
 def test_translate_problem():
-    builder = GeometricSolverBuilder()
-    string = setup_str_from_problem(Problem.from_text("a b c = triangle; h = on_tline b a c, on_tline c a b ? perp a h b c").renamed(), builder.defs)
+    builder = GeometricSolverBuilder(123)
+    string = setup_str_from_problem(
+        ProblemJGEX.from_text(
+            "a b c = triangle; h = on_tline b a c, on_tline c a b ? perp a h b c"
+        ).renamed(),
+        builder.defs,
+    )
     assert string == "{S} a : ; b : ; c : ; d : T a b c d 00 T a c b d 01 ? T a d b c"

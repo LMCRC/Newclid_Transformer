@@ -8,7 +8,7 @@ from alphageo.cli import run_cli
 import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from geosolver import AGENTS_REGISTRY, GeometricSolver, GeometricSolverBuilder
-from geosolver.problem import Problem
+from geosolver.problem import ProblemJGEX
 import torch
 import os
 
@@ -16,7 +16,7 @@ RESULTS_DIR = Path("./results")
 
 
 def solve_problem(
-    problem: Problem, solver_builder: GeometricSolverBuilder
+    problem: ProblemJGEX, solver_builder: GeometricSolverBuilder
 ) -> GeometricSolver:
     logging.info(f"Building {problem}")
     solver = deepcopy(solver_builder).load_problem(problem).build()
@@ -35,7 +35,7 @@ def kill_processes(executor: ProcessPoolExecutor):
 
 
 def parallel_solve(
-    problems: list[Problem],
+    problems: list[ProblemJGEX],
     solver_builder: GeometricSolverBuilder,
     max_workers: Optional[int] = None,
 ) -> GeometricSolver:
@@ -80,7 +80,7 @@ def main() -> bool:
     else:
         out_folder = Path(out_folder)
 
-    solver_builder = GeometricSolverBuilder()
+    solver_builder = GeometricSolverBuilder(123)
     if args.defs:
         solver_builder.load_defs_from_file(Path(args.defs))
     if args.rules:
@@ -90,18 +90,18 @@ def main() -> bool:
 
     stats = {"problem": args.problem}
     if args.have_aux:
-        problems: list[Problem] = []
+        problems: list[ProblemJGEX] = []
         with open(out_folder / "aux.txt", "r") as aux:
             for line in aux.readlines():
                 line = line.strip()
                 if not line:
                     continue
-                problems.append(Problem.from_text(line))
+                problems.append(ProblemJGEX.from_text(line))
         assert len(problems) > 0
         solver = parallel_solve(problems, solver_builder)
     else:
         assert args.problems_file
-        problem = Problem.from_file(
+        problem = ProblemJGEX.from_file(
             problems_path=args.problems_file,
             problem_name=args.problem,
         ).renamed()
@@ -123,8 +123,7 @@ def main() -> bool:
     out_folder.mkdir(parents=True, exist_ok=True)
     stats.update(solver.run_infos)
     if stats["success"]:
-        solver.write_solution(out_folder / "proof_steps.txt")
-        solver.draw_figure(False, out_folder / "proof_figure.png")
+        solver.write_all_outputs(out_folder)
         stats.update(solver.run_infos)
 
     logging.info(f"[{args.problem}] Stats={stats}")

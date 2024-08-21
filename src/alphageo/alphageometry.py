@@ -40,12 +40,12 @@ from torch import load, LongTensor  # type: ignore
 
 if TYPE_CHECKING:
     from geosolver import GeometricSolverBuilder, GeometricSolver
-    from geosolver.problem import Problem
+    from geosolver.problem import ProblemJGEX
 
 
 def run_alphageometry(
     builder: "GeometricSolverBuilder",
-    problem: "Problem",
+    problem: "ProblemJGEX",
     model: "Decoder",
     tokenizer: "spm.SentencePieceProcessor",
     device: str,
@@ -53,7 +53,7 @@ def run_alphageometry(
     model_num_return_sequences: int,
     search_depth: int,
     beam_size: int,
-) -> tuple[GeometricSolver, list[Problem]]:
+) -> tuple[GeometricSolver, list[ProblemJGEX]]:
     """Simplified code to run AlphaGeometry proof search.
 
     We removed all optimizations that are infrastructure-dependent, e.g.
