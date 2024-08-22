@@ -48,7 +48,7 @@ def test_alphageometry_should_solve_orthocenter():
     assert success
 
 
-@pytest.mark.skip("Too slow")
+@pytest.mark.skip("Too slow and need bigger parameters")
 def test_imo_2018_p1():
     check_point_path = Path("./pt_ckpt")
     if not check_point_path.exists():
@@ -77,7 +77,7 @@ def test_imo_2018_p1():
     assert success
 
 
-@pytest.mark.skip("Too slow")
+@pytest.mark.skip("Too slow and need bigger parameters")
 def test_imo_2012_p5():
     check_point_path = Path("./pt_ckpt")
     if not check_point_path.exists():
