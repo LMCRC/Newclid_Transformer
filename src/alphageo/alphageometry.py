@@ -40,7 +40,7 @@ from torch import load, LongTensor  # type: ignore
 
 if TYPE_CHECKING:
     from geosolver import GeometricSolverBuilder, GeometricSolver
-    from geosolver.problem import ProblemJGEX
+    from geosolver.formulations.problem import ProblemJGEX
 
 
 def run_alphageometry(

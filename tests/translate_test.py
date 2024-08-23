@@ -22,7 +22,7 @@ from alphageo.translate import (
     translate_constrained_to_constructive,
 )
 from geosolver.api import GeometricSolverBuilder
-from geosolver.problem import ProblemJGEX
+from geosolver.formulations.problem import ProblemJGEX
 
 
 @pytest.mark.parametrize(

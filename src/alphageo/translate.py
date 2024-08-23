@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Collection
 from geosolver.tools import atomize
 import geosolver.predicates as predicates
 from geosolver.predicates import Predicate
-from geosolver.problem import ProblemJGEX
-from geosolver.definition.definition import DefinitionJGEX
+from geosolver.formulations.problem import ProblemJGEX
+from geosolver.formulations.definition import DefinitionJGEX
 
 if TYPE_CHECKING:
     ...

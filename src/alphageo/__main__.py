@@ -8,7 +8,7 @@ from alphageo.cli import run_cli
 import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from geosolver import AGENTS_REGISTRY, GeometricSolver, GeometricSolverBuilder
-from geosolver.problem import ProblemJGEX
+from geosolver.formulations.problem import ProblemJGEX
 import torch
 import os
 
