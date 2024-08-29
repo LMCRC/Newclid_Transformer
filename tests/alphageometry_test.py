@@ -48,7 +48,7 @@ def test_alphageometry_should_solve_orthocenter():
     assert success
 
 
-@pytest.mark.skip("Too slow and need bigger parameters")
+@pytest.mark.skip("Too slow and maybe need bigger parameters")
 def test_imo_2018_p1():
     check_point_path = Path("./pt_ckpt")
     if not check_point_path.exists():
@@ -65,19 +65,19 @@ def test_imo_2018_p1():
         "--problem",
         "translated_imo_2018_p1",
         "--search-width",
-        "5",
+        "32",
         "--search-depth",
         "2",
         "--batch-size",
-        "5",
+        "32",
         "--lm-beam-width",
-        "5",
+        "32",
     ]
     success = main()
     assert success
 
 
-@pytest.mark.skip("Too slow and need bigger parameters")
+@pytest.mark.skip("Too slow and maybe need bigger parameters")
 def test_imo_2012_p5():
     check_point_path = Path("./pt_ckpt")
     if not check_point_path.exists():
@@ -94,13 +94,42 @@ def test_imo_2012_p5():
         "--problem",
         "translated_imo_2018_p1",
         "--search-width",
-        "5",
+        "32",
         "--search-depth",
         "2",
         "--batch-size",
-        "5",
+        "32",
         "--lm-beam-width",
-        "5",
+        "32",
+    ]
+    success = main()
+    assert success
+
+
+@pytest.mark.skip("OK")
+def test_imo_2004_p1():
+    check_point_path = Path("./pt_ckpt")
+    if not check_point_path.exists():
+        pytest.skip(f"No checkpoint found at {check_point_path}")
+
+    sys.argv = [
+        "alphageo",
+        "--device",
+        "cpu",
+        "-o",
+        None,
+        "--problems-file",
+        "problems_datasets/examples.txt",
+        "--problem",
+        "translated_imo_2004_p1",
+        "--search-width",
+        "32",
+        "--search-depth",
+        "2",
+        "--batch-size",
+        "32",
+        "--lm-beam-width",
+        "32",
     ]
     success = main()
     assert success
