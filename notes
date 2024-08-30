@@ -1,3 +1,4 @@
+alphageo --device cpu -o None --problems-file problems_datasets/examples.txt --problem translated_imo_2004_p1 --search-width 32 --search-depth 2 --batch-size 32 --lm-beam-width 32
 pytest --log-cli-level=INFO --log-file log_2018_p1.txt -k test_imo_2018_p1 tests\alphageometry_test.py
 pytest --log-cli-level=INFO --log-file log_2012_p5.txt -k test_imo_2012_p5 tests\alphageometry_test.py
 pytest --log-cli-level=INFO --log-file log_2004_p1.txt -k test_imo_2004_p1 tests\alphageometry_test.py
