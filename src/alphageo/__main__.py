@@ -91,7 +91,7 @@ def main() -> bool:
     stats = {"problem": args.problem}
     if args.have_aux:
         problems: list[ProblemJGEX] = []
-        with open(out_folder / "aux.txt", "r") as aux:
+        with open(out_folder / "auxiliary.txt", "r") as aux:
             for line in aux.readlines():
                 line = line.strip()
                 if not line:
@@ -132,7 +132,7 @@ def main() -> bool:
         out.write(json.dumps(stats, indent=2))
 
     if not args.have_aux:
-        with open(out_folder / "aux.txt", "w") as out:
+        with open(out_folder / "auxiliary.txt", "w") as out:
             for problem in problems:
                 print(str(problem), file=out)
     return stats["success"]
