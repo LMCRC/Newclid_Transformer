@@ -120,7 +120,7 @@ def priority_beam_search(
                         :num_return_sequences
                     ]  # we just want this many return sequences
                 elif good_score:
-                    # we're not done yet but the updated score warrants further genration of this sequence.
+                    # we're not done yet but the updated score warrants further generation of this sequence.
                     if new_inp.shape[-1] - start_len < max_new_tokens:
                         # also, we're not too long yet
                         live_sequences.append((new_inp, new_score))
