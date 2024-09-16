@@ -82,7 +82,7 @@ def run_alphageometry(
     solver = deepcopy(builder).load_problem(problem).build()
     success = solver.run()
     if success:
-        return (solver, problems)
+        return (solver, problems, problem_scores)
 
     # translate the problem to a string of grammar that the LM is trained on.
     string = setup_str_from_problem(problem, builder.defs)
@@ -189,7 +189,7 @@ def run_alphageometry(
         # replace the old queue with new queue before the new proof search depth.
         beam_queue = new_queue
 
-    return (solver, problems)
+    return (solver, problems, problem_scores)
 
 
 def get_lm(ckpt_init: Path, device: str) -> "Decoder":
