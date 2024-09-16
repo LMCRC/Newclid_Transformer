@@ -108,7 +108,7 @@ def main() -> bool:
         with torch.no_grad():
             model = get_lm(Path(args.ckpt), args.device)
             tokenizer = get_tokenizer(Path(args.vocab))
-            solver, problems = run_alphageometry(
+            solver, problems, problem_scores = run_alphageometry(
                 solver_builder,
                 problem,
                 model,
@@ -133,8 +133,11 @@ def main() -> bool:
 
     if not args.have_aux:
         with open(out_folder / "auxiliary.txt", "w") as out:
-            for problem in problems:
+            for problem, score in zip(problems, problem_scores):
                 print(str(problem), file=out)
+        with open(out_folder / "scored_auxiliary.txt", "w") as out:
+            for problem, score in zip(problems, problem_scores):
+                print(str(problem), " | score: ", str(score), file=out)
     return stats["success"]
 
 

@@ -53,7 +53,7 @@ def run_alphageometry(
     model_num_return_sequences: int,
     search_depth: int,
     beam_size: int,
-) -> tuple[GeometricSolver, list[ProblemJGEX]]:
+) -> tuple[GeometricSolver, list[ProblemJGEX], list[float]]:
     """Simplified code to run AlphaGeometry proof search.
 
     We removed all optimizations that are infrastructure-dependent, e.g.
@@ -76,6 +76,7 @@ def run_alphageometry(
       boolean of whether this is solved.
     """
     problems = [problem]
+    problem_scores = [0.0]
 
     # First we run the symbolic engine DD+AR:
     solver = deepcopy(builder).load_problem(problem).build()
@@ -101,9 +102,11 @@ def run_alphageometry(
     )
 
     for depth in range(search_depth):
-        logging.info(f"Depth {depth}. There are {len(beam_queue)} nodes to expand:")
+        print(f"Depth {depth}. There are {len(beam_queue)} nodes to expand:")
+        # logging.info(f"Depth {depth}. There are {len(beam_queue)} nodes to expand:")
         for _, (string, problem) in beam_queue:
-            logging.info(f"problem : {str(problem)} -- {string}")
+            print(f"problem : {str(problem)} -- {string}")
+            # logging.info(f"problem : {str(problem)} -- {string}")
 
         new_queue = BeamQueue(max_size=beam_size)
 
@@ -124,7 +127,8 @@ def run_alphageometry(
             scores = [o[1] for o in outs]
 
             for i, out_string in enumerate(seqs_str):
-                logging.info(f"LM output {i+1}: {out_string} (score: {scores[i]})")
+                # logging.info(f"LM output {i+1}: {out_string} (score: {scores[i]})")
+                print(f"LM output {i+1}: {out_string} (score: {scores[i]})")
             # outputs = model.beam_decode(string, eos_tokens=[';'])
 
             # translate lm output to the constructive language.
@@ -134,7 +138,8 @@ def run_alphageometry(
             # candidates = reversed(list(candidates))
 
             for lm_out, score in zip(seqs_str, scores):
-                logging.info('Trying LM output (score=%f): "%s"', score, lm_out)
+                print('Trying LM output (score=%f): "%s"', score, lm_out)
+                # logging.info('Trying LM output (score=%f): "%s"', score, lm_out)
 
                 aux_string = try_translate_constrained_to_construct(
                     lm_out, problem.points()
@@ -155,6 +160,8 @@ def run_alphageometry(
                     )
                     solver = deepcopy(builder).load_problem(new_problem).build()
                     problems.append(new_problem)
+                    problem_scores.append(score)
+
                 except ConstructionError as e:
                     logging.info('ConstructionError: "%s"\n', str(e))
                     continue
@@ -163,7 +170,7 @@ def run_alphageometry(
                     continue
                 success = solver.run()
                 if success:
-                    return (solver, problems)
+                    return (solver, problems, problem_scores)
 
                 # Add the candidate to the beam queue.
                 new_queue.add(
