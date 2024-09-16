@@ -1,0 +1,4 @@
+translated_imo_2012_p5
+c a b = r_triangle c a b; d = foot d c a b; x = on_line x c d; k = on_line k a x, on_circle k b c; l = on_line l b x, on_circle l a c; m = on_line m a l, on_line m b k ? cong m k m l
+translated_usamo_1997_p2
+a b c = triangle; d = on_bline d b c; e = on_bline e c a; f = on_bline f a b; z = on_tline z a e f, on_tline z b f d ? perp z c d e
