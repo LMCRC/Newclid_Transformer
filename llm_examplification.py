@@ -1,7 +1,7 @@
 import os
 
 need_aux = [
-    "translated_imo_2008_p1_all_extras",
+    "translated_imo_2008_p1_all_extras_center",
 ]
 
 

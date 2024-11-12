@@ -2,5 +2,5 @@ translated_imo_2012_p5
 c a b = r_triangle c a b; d = foot d c a b; x = on_line x c d; k = on_line k a x, on_circle k b c; l = on_line l b x, on_circle l a c; m = on_line m a l, on_line m b k ? cong m k m l
 translated_usamo_1997_p2
 a b c = triangle; d = on_bline d b c; e = on_bline e c a; f = on_bline f a b; z = on_tline z a e f, on_tline z b f d ? perp z c d e
-translated_imo_2008_p1_all_extras
-a b c = triangle a b c; h = orthocenter h a b c; d = midpoint d b c; e = midpoint e a c; f = midpoint f a b; a1 = on_circle a1 d h, on_line a1 b c; a2 = on_circle a2 d h, on_line a2 b c; b1 = on_circle b1 e h, on_line b1 c a; b2 = on_circle b2 e h, on_line b2 c a; c1 = on_circle c1 f h, on_line c1 a b; c2 = on_circle c2 f h, on_line c2 a b; o1 = eqdistance o1 e e h, on_tline o1 h e f; o2 = eqdistance o2 e e h, on_tline o2 h e d; o3 = eqdistance o3 f f h, on_tline o3 h f d ? cyclic c1 c2 b1 b2 a1 a2
+translated_imo_2008_p1_all_extras_center
+a b c = triangle a b c; h = orthocenter h a b c; d = midpoint d b c; e = midpoint e a c; f = midpoint f a b; a1 = on_circle a1 d h, on_line a1 b c; a2 = on_circle a2 d h, on_line a2 b c; b1 = on_circle b1 e h, on_line b1 c a; b2 = on_circle b2 e h, on_line b2 c a; c1 = on_circle c1 f h, on_line c1 a b; c2 = on_circle c2 f h, on_line c2 a b; o1 = eqdistance o1 e e h, on_tline o1 h e f; o2 = eqdistance o2 e e h, on_tline o2 h e d; o3 = eqdistance o3 f f h, on_tline o3 h f d; o = circle o c1 c2 b1 ? cyclic c1 c2 b1 b2 a1 a2
