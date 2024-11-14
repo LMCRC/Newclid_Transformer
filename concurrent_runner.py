@@ -1,13 +1,17 @@
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+
 # Function to run a command
-def run_command(command : str):
+def run_command(command: str):
     try:
-        result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+        result = subprocess.run(
+            command, shell=True, check=True, capture_output=True, text=True
+        )
         return (command, result.stdout)
     except subprocess.CalledProcessError as e:
         return (command, e.stderr)
+
 
 # List of commands to run simultaneously
 commands = [

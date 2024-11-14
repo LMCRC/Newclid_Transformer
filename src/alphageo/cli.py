@@ -19,7 +19,7 @@ def run_cli() -> Namespace:
         "--have-aux",
         default=False,
         action="store_true",
-        help="In the outfolder we have a file with a list of problems based on adding auxilliary points to an original problem"
+        help="In the outfolder we have a file with a list of problems based on adding auxilliary points to an original problem",
     )
     parser.add_argument(
         "--exp",
@@ -38,11 +38,7 @@ def run_cli() -> Namespace:
         help="Path to the list of deduction (explicit) rules used by DD."
         " Defaults to geosolver's default. See geosolver for more details.",
     )
-    parser.add_argument(
-        "--agent",
-        default=None,
-        help="Agent for geosolver"
-    )
+    parser.add_argument("--agent", default=None, help="Agent for geosolver")
     parser.add_argument(
         "--ckpt",
         default="pt_ckpt",

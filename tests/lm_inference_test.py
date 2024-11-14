@@ -19,9 +19,9 @@ def test_beamsearch_outputs():
     torch.set_grad_enabled(False)
 
     tokenizer = spm.SentencePieceProcessor(str(check_point_path / "vocab.model"))
-    cfg = torch.load(check_point_path / "cfg.sav") # type: ignore
+    cfg = torch.load(check_point_path / "cfg.sav")  # type: ignore
     model = Decoder(cfg)
-    params = torch.load(check_point_path / "params.sav") # type: ignore
+    params = torch.load(check_point_path / "params.sav")  # type: ignore
     model.load_state_dict(params)
     model.bfloat16()
 
@@ -33,8 +33,14 @@ def test_beamsearch_outputs():
     inp = torch.LongTensor([tokens])
     outp = beam_search(model, inp, beam_width=4, num_return_sequences=2)
 
-    assert tokenizer.decode_ids(outp[0][0].tolist()) == test_str + " e : C a c e 02 C b d e 03 ;" # type: ignore
+    assert (
+        tokenizer.decode_ids(outp[0][0].tolist())
+        == test_str + " e : C a c e 02 C b d e 03 ;"
+    )  # type: ignore
     assert isclose(-1.6585191699136992, outp[0][1], rtol=0.05)
 
-    assert tokenizer.decode_ids(outp[1][0].tolist()) == test_str + " e : D a b c e 02 D a c b e 03 ;" # type: ignore
+    assert (
+        tokenizer.decode_ids(outp[1][0].tolist())
+        == test_str + " e : D a b c e 02 D a c b e 03 ;"
+    )  # type: ignore
     assert isclose(-1.802338749355057, outp[1][1], rtol=0.05)
