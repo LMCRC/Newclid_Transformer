@@ -19,8 +19,6 @@ def test_solve_orthocenter_aux():
         "problems_datasets/examples.txt",
         "--problem",
         "orthocenter_aux",
-        "--rules",
-        "rule_sets/triangles.txt",
     ]
     success = main()
     assert success
@@ -41,8 +39,6 @@ def test_alphageometry_should_solve_orthocenter():
         "problems_datasets/examples.txt",
         "--problem",
         "orthocenter",
-        "--rules",
-        "rule_sets/triangles.txt",
     ]
     success = main()
     assert success
