@@ -17,117 +17,48 @@ introduced in the [Nature 2024](https://www.nature.com/articles/s41586-023-06747
 </center>
 
 
-## Installation, download weights and vocabulary.
+## Installation
 
-### Fully automated
+### From source
 
-The easiest way to install AlphaGeometry is through the provided `setup.sh` script.
-
-It allows to install either via `virtualenv`, `conda` or `docker`:
-```shell
-INSTALL WITH VIRTUALENV:
-bash ./setup.sh --venv
-
-INSTALL WITH CONDA
-bash ./setup.sh --conda
-
-INSTALL WITH DOCKER
-bash ./setup.sh --docker
+```bash
+pip install https://github.com/LMCRC/Newclid_Transformer.git[download,torch]
 ```
 
-This will install all required packages, including `newclid`, and download the LM weights and the tokenizer vocabulary.
-
-If you are using the script to re-install over a previous installation, you can also pass the `--no-download` option to prevent it from downloading model weights and the tokenizer again.
-
-### Manually -- virtualenv/conda
-
-Installation is done in a virtual environment.
-
-For a python venv environment, first run
-
-```shell
-virtualenv -p python3 .
-source ./bin/activate
-```
-
-For a conda environment, run
-```shell
-conda create -n ag python=3.10.12
-conda activate ag
-```
-
-Then, install alphageo and its dependencies:
-```shell
-pip install -e .[download,torch]
-```
-
-`download` installs boto3, which is needed to download model weights and vocabulary files.\
-`torch` installs torch, which for the language model.
+`torch==2.2.2` installs torch, which for the language model, can be skiped if you wish to install torch yourself (with cuda for example).
+`download` installs boto3, which is needed to download model weights and vocabulary files.
 
 To get model weights and tokenizer vocab, and save in pt_ckpt
-
-```shell
+```bash
 python common_folder_downloader.py --region cn-southwest-2 --app_token 82aaeb97-6bbb-4a9a-a164-07268a0a6d0b --bucket_name bucket-pangu-green-guiyang --path philipjg/pt_ckpt/
 ```
 
-### Manually -- docker
+## Usage
 
-Then clean-build the docker:
-```shell
-docker build --no-cache . -t alphageometry_pt:latest
-```
-
-Get model weights and tokenizer vocab:
-```shell
-docker run --name alphageo --gpus="all" -ti --rm --mount type=bind,src=.,target=/ag/ --entrypoint python alphageometry_pt:latest \
-common_folder_downloader.py --region cn-southwest-2 --app_token 82aaeb97-6bbb-4a9a-a164-07268a0a6d0b --bucket_name bucket-pangu-green-guiyang --path philipjg/pt_ckpt/
-```
-
-## Running alphageo
-
-To run alphageo in either virtualenv or conda (whichever was selected, see above), first activate the respective environment:
+Simply run `alphageo` with parameters for your run
 ```bash
-source ./bin/activate
-```
-or
-```bash
-conda activate ag
-```
-
-Then simply run `alphageo` with parameters for your run
-```
 alphageo --problems_file [...]
 ```
 
-To run alphageo with docker (if build above), make sure you bind the local `problems_datasets`, `pt_ckpt` and `results` folders.\
-`alphageo` is already set as the docker's entrypoint, so just pass your parameters to the run command:
-```bash
-docker run --name alphageo --gpus="all" -ti --rm --mount type=bind,src="./pt_ckpt/",target=/ag/pt_ckpt/ --mount type=bind,src="./problems_datasets/",target=/ag/problems_datasets/ --mount type=bind,src="./results/",target=/ag/results/ alphageometry_pt:latest --problems_file [...]
-```
-
-In the examples below, we assume `alphageo` is run from a virutalenv or conda environment.
-
-### Running DDAR
-
 The script loads a problem by reading a list of problems
 from a text file and solves the specific problem in the list according
-to its name. We pass these two pieces of information through the flags
-`--problems_file` and `--problem`.
+to its name.
+We pass these two pieces of information through the flags `--problems_file` and `--problem`.
+
+
+### Running the geometric solver alone
+
+
 We use `--solver-only` to indicate that we want to use the DDAR solver alone, without the LM.
 
-Below we show this solver solving IMO 2000 P1:
-
-```shell
-alphageo \
-  --problems-file problems_datasets/imo_ag_30.txt \
-  --problem translated_imo_2000_p1 \
-  --solver-only \
-  --logging
+For example below we show this solver solving IMO 2000 P1:
+```bash
+alphageo --problems-file problems_datasets/imo_ag_30.txt --problem translated_imo_2000_p1 --solver-only --logging
 ```
 
 Expect the following output
 
-```shell
+```bash
 INFO:root:translated_imo_2000_p1
 INFO:root:a b = segment a b; g1 = on_tline g1 a a b; g2 = on_tline g2 b b a; m = on_circle m g1 a, on_circle m g2 b; n = on_circle n g1 a, on_circle n g2 b; c = on_pline c m a b, on_circle c g1 a; d = on_pline d m a b, on_circle d g2 b; e = on_line e a c, on_line e b d; p = on_line p a n, on_line p c d; q = on_line q b n, on_line q c d ? cong e p e q
 INFO:root:Depth 1/1000 time = 0.6569983959197998
@@ -201,16 +132,13 @@ TIP: There are a number of optional arguments we can provide to `alphageo` to gu
 LM generation and solution exploration. Use `alphageo --help` to see all available
 parameters and their default values.
 
-```shell
-alphageo \
---problems-file problems_datasets/examples.txt \
---problem orthocenter \
---logging
+```bash
+alphageo --problems-file problems_datasets/examples.txt --problem orthocenter --logging
 ```
 
 Expect the following output:
 
-```shell
+```bash
 INFO:root:orthocenter
 INFO:root:a b c = triangle; d = on_tline b a c, on_tline c a b ? perp a d b c
 INFO:root:Depth 1/1000 time = 0.007330179214477539
@@ -286,21 +214,8 @@ The proof search therefore terminates and there is no second iteration.
 Before attempting to reproduce the AlphaGeometry numbers in our paper or pushing to the reposity,
 please make sure to pass all tests in the prepared test suite:
 
-```shell
+```bash
 pytest
-
-=================== test session starts ====================
-platform linux -- Python 3.10.14, pytest-8.1.1, pluggy-1.4.0
-rootdir: /nfs/ainlp/philipjg/math_agent/alphageometry
-configfile: pyproject.toml
-plugins: mock-3.14.0, check-2.3.1, cov-5.0.0
-collected 13 items
-
-tests/alphageometry_test.py ...                       [ 23%]
-tests/beam_queue_test.py .                            [ 30%]
-tests/translate_test.py ........                      [100%]
-
-==================== 13 passed in 5.48s ====================
 ```
 
 
