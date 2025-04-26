@@ -9,14 +9,17 @@ try:
 except ImportError:
     torch = object()
 
-from geosolver import GeometricSolverBuilder
+from newclid import GeometricSolverBuilder
+
 RESULTS_DIR = "./results"
+
 
 def main() -> bool:
     args = run_cli()
 
     if args.logging:
         import logging
+
         logging.basicConfig(level=logging.INFO)
 
     # when using the language model,
@@ -34,7 +37,7 @@ def main() -> bool:
         else:
             out_folder = Path(out_folder)
             out_folder.mkdir(parents=True, exist_ok=True)
-    
+
         single_file_stats = out_folder / "stats.json"
         if os.path.exists(single_file_stats):
             tmp = json.load(open(single_file_stats))
@@ -44,7 +47,7 @@ def main() -> bool:
                         logging.info(f"[{args.problem}] stats found!")
                     return True
 
-    solver_builder = GeometricSolverBuilder().load_problem_from_file(
+    solver_builder = GeometricSolverBuilder(seed=None).load_problem_from_file(
         problems_path=args.problems_file,
         problem_name=args.problem,
         translate=need_rename,
@@ -89,15 +92,15 @@ def main() -> bool:
         stats.update(solver.run_infos)
     #
     else:
-        stats["success"] = success # case when llm can't solve it
-    
+        stats["success"] = success  # case when llm can't solve it
+
     if args.logging:
         logging.info(f"[{args.problem}] Stats={stats}")
         logging.info(f"[{args.problem}] Success={success}")
-    
+
     if out_folder is not None:
-        with open(single_file_stats,"w") as out:
-            out.write(json.dumps(stats,indent=2))
+        with open(single_file_stats, "w") as out:
+            out.write(json.dumps(stats, indent=2))
 
     return success
 

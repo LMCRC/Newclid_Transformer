@@ -1,5 +1,0 @@
-numpy
-scipy
-matplotlib
-typing-extensions
-sentencepiece==0.1.99

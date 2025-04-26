@@ -1,17 +1,14 @@
 
 # Solving Olympiad Geometry without Human Demonstrations
 
-
 This repository contains the code necessary to install and run
-DDAR and a version of AlphaGeometry using pyTorch to implement the LM
+a version of AlphaGeometry using pytorch.
 
-It should be able to reproduce results of DDAR and AlphaGeometry,
+It allows to reproduce results of DDAR and AlphaGeometry,
 the two geometry theorem provers
 introduced in the [Nature 2024](https://www.nature.com/articles/s41586-023-06747-5) paper:
 
 *<center>"Solving Olympiad Geometry without Human Demonstrations".</center>*
-
-
 </br>
 
 
@@ -20,36 +17,7 @@ introduced in the [Nature 2024](https://www.nature.com/articles/s41586-023-06747
 </center>
 
 
-## Dependencies
-
-For the instructions presented below, we use Python 3.10.12.
-
-It likely will work with other Python versions (at least >= 3.10), but is untested.
-
-Required pip package version numbers are
-
-```
-sentencepiece==0.1.99
-torch==2.2.2
-boto3==1.33.13
-
-```
-Later versions may work, but are untested.
-
-Our code depends on `geosolver>=v1.1.1`, which is another internal package
-and not registered with `pip`/pypi.
-
-Geosolver v1.1.1 is available at `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.1?ref_type=tags` .
-
-This will automatically be installed with the `setup.sh` installation script, or by using
-the `[geosolver]` option when installing manually.
-
-Note that you will require login details or a valid token to clone the geosolver repository.
-
-Note that one can still run the DDAR solver
-without the `torch` and `sentencepiece` dependencies.
-
-## Install dependencies, download weights and vocabulary.
+## Installation, download weights and vocabulary.
 
 ### Fully automated
 
@@ -67,7 +35,7 @@ INSTALL WITH DOCKER
 bash ./setup.sh --docker
 ```
 
-This will install all required packages, including `geosolver`, and download the LM weights and the tokenizer vocabulary.
+This will install all required packages, including `newclid`, and download the LM weights and the tokenizer vocabulary.
 
 If you are using the script to re-install over a previous installation, you can also pass the `--no-download` option to prevent it from downloading model weights and the tokenizer again.
 
@@ -90,16 +58,11 @@ conda activate ag
 
 Then, install alphageo and its dependencies:
 ```shell
-pip install -e .[download,torch,geosolver]
+pip install -e .[download,torch]
 ```
 
 `download` installs boto3, which is needed to download model weights and vocabulary files.\
-`torch` installs pyTorch, which is the framework for our LM .\
-`geosolver` installs the internal geosolver v1.1.1 from `https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver/-/tree/v1.1.1?ref_type=tags`.
-
-If you are participating in active development, you can install recommended dev features with the `[dev]` tag.
-
-If any of these requirements are already installed on the host system (in the virtual environment), they can be omitted.
+`torch` installs torch, which for the language model.
 
 To get model weights and tokenizer vocab, and save in pt_ckpt
 
@@ -108,11 +71,6 @@ python common_folder_downloader.py --region cn-southwest-2 --app_token 82aaeb97-
 ```
 
 ### Manually -- docker
-
-To install alphageo as a docker image, first manually clone the `geosolver v1.1.1` dependency:
-```shell
-git clone --single-branch --branch v1.1.1 https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git
-```
 
 Then clean-build the docker:
 ```shell
@@ -123,11 +81,6 @@ Get model weights and tokenizer vocab:
 ```shell
 docker run --name alphageo --gpus="all" -ti --rm --mount type=bind,src=.,target=/ag/ --entrypoint python alphageometry_pt:latest \
 common_folder_downloader.py --region cn-southwest-2 --app_token 82aaeb97-6bbb-4a9a-a164-07268a0a6d0b --bucket_name bucket-pangu-green-guiyang --path philipjg/pt_ckpt/
-```
-
-Optionally, remove the geosolver folder (it has been installed as a dependency inside the docker image, and is not required any longer)
-```shell
-rm -rf ./geosolver/
 ```
 
 ## Running alphageo

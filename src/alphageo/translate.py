@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from geosolver.problem import Definition
+    from newclid.problem import Definition
 
 MAP_SYMBOL = {
     "T": "perp",

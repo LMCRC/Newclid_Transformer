@@ -7,9 +7,6 @@ RUN apt-get update
 RUN apt-get install -y python3 pip python-is-python3 git
 RUN pip install --upgrade pip
 
-WORKDIR /ag/geosolver
-RUN pip install .
-
 WORKDIR /ag
 RUN pip install -e .[torch,download]
 RUN rm -rf problems_datasets/ results/

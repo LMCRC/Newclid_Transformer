@@ -27,13 +27,13 @@ def run_cli() -> Namespace:
         "--defs",
         default=None,
         help="Path to definitions of available constructions to state a problem."
-        " Defaults to geosolver's default. See geosolver for more details.",
+        " Defaults to newclid's default. See newclid for more details.",
     )
     parser.add_argument(
         "--rules",
         default=None,
         help="Path to the list of deduction (explicit) rules used by DD."
-        " Defaults to geosolver's default. See geosolver for more details.",
+        " Defaults to newclid's default. See newclid for more details.",
     )
     parser.add_argument(
         "--solver-only",

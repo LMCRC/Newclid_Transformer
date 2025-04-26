@@ -39,7 +39,7 @@ except ImportError:
     LongTensor = raise_if_instanciated("torch")
 
 if TYPE_CHECKING:
-    from geosolver import GeometricSolver
+    from newclid import GeometricSolver
 
 
 def run_alphageometry(
@@ -129,7 +129,7 @@ def run_alphageometry(
 
             for i, out_string in enumerate(outputs["seqs_str"]):
                 logging.info(
-                    f"LM output {i+1}: {out_string} (score: {outputs['scores'][i]})"
+                    f"LM output {i + 1}: {out_string} (score: {outputs['scores'][i]})"
                 )
             # outputs = model.beam_decode(string, eos_tokens=[';'])
 

@@ -6,9 +6,9 @@ name = "alphageo"
 authors = [
     {name = "Mathis Federico", email = "mathfederico@gmail.com"}
 ]
-dynamic = ["version", "readme", "dependencies"]
-description = "Pytorch implementation of AlphaGeometry compatible with geosolver."
-requires-python = ">=3.6"
+dynamic = ["version", "readme"]
+description = "Pytorch implementation of AlphaGeometry compatible with newclid."
+requires-python = ">=3.9"
 classifiers=[
     'Intended Audience :: Science/Research',
     'Intended Audience :: Developers',
@@ -19,13 +19,19 @@ classifiers=[
     'Operating System :: Unix',
     'Operating System :: MacOS',
 ]
+dependencies = [
+    "newclid>=2.0.0",
+    "numpy>=1.24.4",
+    "sentencepiece==0.1.99",
+]
 
 
 [project.optional-dependencies]
-dev = ['ruff', 'pytest', 'pytest-cov', 'pytest-check', 'pytest-mock', 'pre-commit']
 torch = ['torch==2.2.2']
-download = ['boto3==1.33.13']
-geosolver = ['geosolver @ git+https://rnd-gitlab-eu.huawei.com/Noahs-Ark/libraries/geosolver.git@v1.1.1#egg=geosolver']
+download = ['boto3==1.33.13', 'sentencepiece==0.1.99']
+
+[dependency-groups]
+dev = ['ruff', 'pytest', 'pytest-cov', 'pytest-check', 'pytest-mock', 'pre-commit']
 
 [tool.setuptools]
 license-files = ['LICEN[CS]E*', 'COPYING*', 'NOTICE*', 'AUTHORS*']
